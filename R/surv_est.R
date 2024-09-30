@@ -30,17 +30,17 @@ surv_est <- function(long_data,
 
 
     long_data2 <- long_data %>%
-      group_by(id) %>%
-      mutate(time0 = ifelse(is.na(lag(time)), 0, lag(time))) %>%
-      filter(time != 0) %>%
-      filter(time0 < time)
+      dplyr::group_by(id) %>%
+      dplyr::mutate(time0 = ifelse(is.na(dplyr::lag(time)), 0, dplyr::lag(time))) %>%
+      dplyr::filter(time != 0) %>%
+      dplyr::filter(time0 < time)
     long_data2$d0 <- surv_data$d[match(long_data2$id, surv_data$id)]
 
     long_data2 <- na.omit(long_data2) %>%
-      group_by(id) %>%
-      mutate(d = ifelse(time < max(time, na.rm = TRUE), 0, d0))
+      dplyr::group_by(id) %>%
+      dplyr::mutate(d = ifelse(time < max(time, na.rm = TRUE), 0, d0))
     model_formula <- as.formula(paste("Surv(time0, time, d) ~ ", paste(SM_variables, collapse = "+")))
-    model <- coxph(model_formula, data = long_data2)
+    model <- survival::coxph(model_formula, data = long_data2)
     alpha.hat <- summary(model)$coef[, 1]
 
     return(alpha.hat)
@@ -58,22 +58,22 @@ surv_est <- function(long_data,
     # longitudinal submodel, try nlminb optimizer first, if there is an error, then use optim optimizer
     lmeFit_fixedformula <- as.formula(paste("Y ~ ", paste(LM_fixedEffect_withTime_variables, collapse = "+")))
     lmeFit_randomformula <- as.formula(paste("~", paste(LM_randomEffect_variables, collapse = "+"), "|id"))
-    control_optim <- lmeControl(msMaxIter = 1000, msMaxEval = 1000, opt = "optim")
-    control_nlminb <- lmeControl(msMaxIter = 1000, msMaxEval = 1000, opt = "nlminb")
+    control_optim <- nlme::lmeControl(msMaxIter = 1000, msMaxEval = 1000, opt = "optim")
+    control_nlminb <- nlme::lmeControl(msMaxIter = 1000, msMaxEval = 1000, opt = "nlminb")
     lmeFit <- tryCatch(
       {
-        lmeFit <- lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_optim)
+        lmeFit <- nlme::lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_optim)
       },
       error = function(e) {
         print(paste0("Error with optim: ", e))
-        lmeFit <- lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_nlminb)
+        lmeFit <- nlme::lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_nlminb)
       }
     )
     # print(lmeFit)
 
     # survival submodel
     coxFit_formula <- as.formula(paste("Surv(D, d) ~ ", paste(SM_base_variables, collapse = "+")))
-    coxFit <- coxph(coxFit_formula, data = surv_data, x = TRUE)
+    coxFit <- survival::coxph(coxFit_formula, data = surv_data, x = TRUE)
     # summary(coxFit)
 
     # jointFit = JMbayes2::jm(coxFit,lmeFit,time_var="time", n_chains=1L,n_iter=11000L,n_burnin=1000L)
@@ -96,8 +96,6 @@ surv_est <- function(long_data,
     stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
     stopifnot("`SM_base_variables` must be provided." = !is.null(SM_base_variables))
 
-
-
     # remove patients with no Y measurement
     zeroRecords_id <- long_data[is.na(long_data$Y), "id"]
     long_data <- long_data[!long_data$id %in% zeroRecords_id, ]
@@ -114,22 +112,22 @@ surv_est <- function(long_data,
     # longitudinal submodel, try nlminb optimizer first, if there is an error, then use optim optimizer
     lmeFit_fixedformula <- as.formula(paste("Y ~ ", paste(LM_fixedEffect_withTime_variables, collapse = "+"), "+Ni"))
     lmeFit_randomformula <- as.formula(paste("~", paste(LM_randomEffect_variables, collapse = "+"), "|id"))
-    control_optim <- lmeControl(msMaxIter = 1000, msMaxEval = 1000, opt = "optim")
-    control_nlminb <- lmeControl(msMaxIter = 1000, msMaxEval = 1000, opt = "nlminb")
+    control_optim <- nlme::lmeControl(msMaxIter = 1000, msMaxEval = 1000, opt = "optim")
+    control_nlminb <- nlme::lmeControl(msMaxIter = 1000, msMaxEval = 1000, opt = "nlminb")
     lmeFit <- tryCatch(
       {
-        lmeFit <- lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_optim)
+        lmeFit <- nlme::lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_optim)
       },
       error = function(e) {
         print(paste0("Error with optim: ", e))
-        lmeFit <- lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_nlminb)
+        lmeFit <- nlme::lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_nlminb)
       }
     )
     print(lmeFit)
 
     # survival submodel
     coxFit_formula <- as.formula(paste("Surv(D, d) ~ ", paste(SM_base_variables, collapse = "+")))
-    coxFit <- coxph(coxFit_formula, data = surv_data, x = TRUE)
+    coxFit <- survival::coxph(coxFit_formula, data = surv_data, x = TRUE)
     summary(coxFit)
 
     # jointFit = JMbayes2::jm(coxFit,lmeFit,time_var="time", n_chains=1L,n_iter=11000L,n_burnin=1000L)
@@ -138,7 +136,7 @@ surv_est <- function(long_data,
     print(summary(jointFit))
 
     surv_proc <- unlist(coef(jointFit))
-    long_proc <- unlist(fixef(jointFit))
+    long_proc <- unlist(nlme::fixef(jointFit))
 
     results <- list(
       "long_proc" = long_proc,
@@ -152,7 +150,6 @@ surv_est <- function(long_data,
     stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
     stopifnot("`SM_base_variables` must be provided." = !is.null(SM_base_variables))
 
-
     data <- long_data
     if (is.null(imp_time_factor)) {
       imp_time_factor <- 1
@@ -162,12 +159,11 @@ surv_est <- function(long_data,
       # imp_time_factor = 0.5
       # group the data based on the time factor
       data <- data %>%
-        mutate(time_new = ceiling(time / imp_time_factor)) %>%
-        group_by(id, time_new) %>%
-        mutate(Y_mean = mean(Y, na.rm = TRUE)) %>%
-        # mutate(Y_mean = ifelse(is.numeric(Y_mean),Y_mean,NA)) %>%
-        dplyr::select(id, Y_mean, time_new, setdiff(names(data), c("id", "Y", "time"))) %>%
-        ungroup()
+        dplyr::mutate(time_new = ceiling(time / imp_time_factor)) %>%
+        dplyr::group_by(id, time_new) %>%
+        dplyr::mutate(Y_mean = mean(Y, na.rm = TRUE)) %>%
+        dplyr::select(id, Y_mean, time_new, dplyr::setdiff(names(data), c("id", "Y", "time"))) %>%
+        dplyr::ungroup()
       colnames(data)[2:3] <- c("Y", "time")
 
       # create a new dataset with the same columns in data1. For a given id, the time is from 1 to max_time. If there is no value of Y at a given time, then Y is NA.
@@ -178,15 +174,15 @@ surv_est <- function(long_data,
         dplyr::select(-Y, -time) %>%
         unique()
       data2 <- data_base %>%
-        slice(rep(1:n(), each = max_time)) %>%
-        group_by(id) %>%
-        mutate(time = rep(1:max_time))
+        dplyr::slice(rep(1:n(), each = max_time)) %>%
+        dplyr::group_by(id) %>%
+        dplyr::mutate(time = rep(1:max_time))
       # delete time after the disease time
       data2$D <- surv_data$D[match(data2$id, surv_data$id)]
-      data2 <- data2[data2$time <= ceiling(data2$D / imp_time_factor), setdiff(names(data2), c("Y"))]
+      data2 <- data2[data2$time <= ceiling(data2$D / imp_time_factor), dplyr::setdiff(names(data2), c("Y"))]
 
       # join the two datasets
-      data3 <- left_join(data2, data, by = setdiff(names(data), c("Y")))
+      data3 <- dplyr::left_join(data2, data, by = dplyr::setdiff(names(data), c("Y")))
       data3$time <- data3$time * imp_time_factor # convert time back to the original scale
     }
 
@@ -197,7 +193,7 @@ surv_est <- function(long_data,
 
     #### Start imputation ####
     # empty imputation
-    imp0 <- mice(as.matrix(df_full), maxit = 0)
+    imp0 <- mice::mice(as.matrix(df_full), maxit = 0)
     predM <- imp0$predictorMatrix
     impM <- imp0$method
 
@@ -209,32 +205,31 @@ surv_est <- function(long_data,
     impM1["Y"] <- "2l.lmer"
 
     # multilevel imputation
-    imp1 <- mice(as.matrix(df_full),
-                 m = 5,
-                 predictorMatrix = predM1, method = impM1, maxit = 5
+    imp1 <- mice::mice(as.matrix(df_full),
+                       m = 5,
+                       predictorMatrix = predM1, method = impM1, maxit = 5
     )
 
     # fit the cox-ph model
     coxph_imp <- function(data_imp) {
       # cox-ph model
       long_data_imp2 <- data_imp %>%
-        group_by(id) %>%
-        mutate(time0 = ifelse(is.na(lag(time)), 0, lag(time)))
+        dplyr::group_by(id) %>%
+        dplyr::mutate(time0 = ifelse(is.na(dplyr::lag(time)), 0, dplyr::lag(time)))
       long_data_imp2$d0 <- surv_data$d[match(long_data_imp2$id, surv_data$id)]
       long_data_imp2 <- na.omit(long_data_imp2) %>%
-        group_by(id) %>%
-        mutate(d = ifelse(time < max(time, na.rm = TRUE), 0, d0)) %>%
-        filter(time0 < time)
+        dplyr::group_by(id) %>%
+        dplyr::mutate(d = ifelse(time < max(time, na.rm = TRUE), 0, d0)) %>%
+        dplyr::filter(time0 < time)
       model_formula <- as.formula(paste("Surv(time0, time, d) ~ ", paste(SM_variables, collapse = "+")))
-      model <- coxph(model_formula, data = long_data_imp2)
+      model <- survival::coxph(model_formula, data = long_data_imp2)
       (alpha.hat <- summary(model)$coef[, 1])
     }
-    fit <- lapply(1:5, function(i) coxph_imp(complete(imp1, action = i)))
+    fit <- lapply(1:5, function(i) coxph_imp(mice::complete(imp1, action = i)))
     alpha.hat <- sapply(seq_along(fit[[1]]), function(i) mean(sapply(fit, `[`, i)))
     names(alpha.hat) <- names(fit[[1]])
 
     return(alpha.hat)
-
   } else if (method == "VAImputation_Cox") {
     # Check Inputs
     stopifnot("`SM_variables` must be provided." = !is.null(SM_variables))
@@ -248,12 +243,12 @@ surv_est <- function(long_data,
       # If the imp_time_factor is specified and is not 1
       # group the data based on the time factor
       data <- data %>%
-        mutate(time_new = ceiling(time / imp_time_factor)) %>%
-        group_by(id, time_new) %>%
-        mutate(Y_mean = mean(Y, na.rm = TRUE)) %>%
+        dplyr::mutate(time_new = ceiling(time / imp_time_factor)) %>%
+        dplyr::group_by(id, time_new) %>%
+        dplyr::mutate(Y_mean = mean(Y, na.rm = TRUE)) %>%
         # mutate(Y_mean = ifelse(is.numeric(Y_mean),Y_mean,NA)) %>%
-        dplyr::select(id, Y_mean, time_new, setdiff(names(data), c("id", "Y", "time"))) %>%
-        ungroup()
+        dplyr::select(id, Y_mean, time_new, dplyr::setdiff(names(data), c("id", "Y", "time"))) %>%
+        dplyr::ungroup()
       colnames(data)[2:3] <- c("Y", "time")
 
       # create a new dataset with the same columns in data1. For a given id, the time is from 1 to max_time. If there is no value of Y at a given time, then Y is NA.
@@ -264,15 +259,15 @@ surv_est <- function(long_data,
         dplyr::select(-Y, -time) %>%
         unique()
       data2 <- data_base %>%
-        slice(rep(1:n(), each = max_time)) %>%
-        group_by(id) %>%
-        mutate(time = rep(1:max_time))
+        dplyr::slice(rep(1:n(), each = max_time)) %>%
+        dplyr::group_by(id) %>%
+        dplyr::mutate(time = rep(1:max_time))
       # delete time after the disease time
       data2$D <- surv_data$D[match(data2$id, surv_data$id)]
-      data2 <- data2[data2$time <= ceiling(data2$D / imp_time_factor), setdiff(names(data2), c("Y"))]
+      data2 <- data2[data2$time <= ceiling(data2$D / imp_time_factor), dplyr::setdiff(names(data2), c("Y"))]
 
       # join the two datasets
-      data3 <- left_join(data2, data, by = setdiff(names(data), c("Y")))
+      data3 <- dplyr::left_join(data2, data, by = dplyr::setdiff(names(data), c("Y")))
       data3$time <- data3$time * imp_time_factor # convert time back to the original scale
     }
 
@@ -291,7 +286,7 @@ surv_est <- function(long_data,
 
     #### Start imputation ####
     # empty imputation
-    imp0 <- mice(as.matrix(df_full), maxit = 0)
+    imp0 <- mice::mice(as.matrix(df_full), maxit = 0)
     predM <- imp0$predictorMatrix
     impM <- imp0$method
 
@@ -303,41 +298,41 @@ surv_est <- function(long_data,
     impM1["Y"] <- "2l.lmer"
 
     # multilevel imputation
-    imp1 <- mice(as.matrix(df_full),
-                 m = 5,
-                 predictorMatrix = predM1, method = impM1, maxit = 5
+    imp1 <- mice::mice(as.matrix(df_full),
+                       m = 5,
+                       predictorMatrix = predM1, method = impM1, maxit = 5
     )
 
     # # cox-ph model
-    # long_data_imp = complete(imp1)
+    # long_data_imp = mice::complete(imp1)
     # long_data_imp2 = long_data_imp %>%
-    #   group_by(id) %>%
-    #   mutate(time0 = ifelse(is.na(lag(time)),0,lag(time) ))
+    #   dplyr::group_by(id) %>%
+    #   dplyr::mutate(time0 = ifelse(is.na(dplyr::lag(time)),0,dplyr::lag(time) ))
     # long_data_imp2$d0 = surv_data$d[match(long_data_imp2$id,surv_data$id)]
     # long_data_imp2 = na.omit(long_data_imp2) %>%
-    #             group_by(id) %>%
-    #             mutate(d=ifelse(time<max(time,na.rm = TRUE),0,d0))
+    #             dplyr::group_by(id) %>%
+    #             dplyr::mutate(d=ifelse(time<max(time,na.rm = TRUE),0,d0))
 
     # model_formula = as.formula(paste("Surv(time0, time, d) ~ ",paste(SM_variables,collapse="+")))
-    # model = coxph(model_formula, data = long_data_imp2)
+    # model = survival::coxph(model_formula, data = long_data_imp2)
     # (alpha.hat = summary(model)$coef[,1])
 
     # fit the cox-ph model
     coxph_imp <- function(data_imp) {
       # cox-ph model
       long_data_imp2 <- data_imp %>%
-        group_by(id) %>%
-        mutate(time0 = ifelse(is.na(lag(time)), 0, lag(time)))
+        dplyr::group_by(id) %>%
+        dplyr::mutate(time0 = ifelse(is.na(dplyr::lag(time)), 0, dplyr::lag(time)))
       long_data_imp2$d0 <- surv_data$d[match(long_data_imp2$id, surv_data$id)]
       long_data_imp2 <- na.omit(long_data_imp2) %>%
-        group_by(id) %>%
-        filter(time0 < time) %>%
-        mutate(d = ifelse(time < max(time, na.rm = TRUE), 0, d0))
+        dplyr::group_by(id) %>%
+        dplyr::filter(time0 < time) %>%
+        dplyr::mutate(d = ifelse(time < max(time, na.rm = TRUE), 0, d0))
       model_formula <- as.formula(paste("Surv(time0, time, d) ~ ", paste(SM_variables, collapse = "+")))
-      model <- coxph(model_formula, data = long_data_imp2)
+      model <- survival::coxph(model_formula, data = long_data_imp2)
       (alpha.hat <- summary(model)$coef[, 1])
     }
-    fit <- lapply(1:5, function(i) coxph_imp(complete(imp1, action = i)))
+    fit <- lapply(1:5, function(i) coxph_imp(mice::complete(imp1, action = i)))
     alpha.hat <- sapply(seq_along(fit[[1]]), function(i) mean(sapply(fit, `[`, i)))
     names(alpha.hat) <- names(fit[[1]])
 
