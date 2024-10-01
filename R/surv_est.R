@@ -1,8 +1,14 @@
 #' surv_est
 #'
-#' @param long_data
+#' @param long_data Long dataset
 #' @param method
-#' @param surv_data
+#' Either:
+#' - "cox"
+#' - "JMLD"
+#' - "VA_JMLD"
+#' - "Imputation_Cox"
+#' - "VAImputation_Cox"
+#' @param surv_data Survival data
 #' @param LM_fixedEffect_withTime_variables
 #' @param LM_randomEffect_variables
 #' @param SM_variables

@@ -1,14 +1,22 @@
 #' long_est
 #'
-#' @param long_data
+#' @param long_data Long dataset
 #' @param method
+#' Either:
+#' - "standard_LME"
+#' - "VA_LME"
+#' - "JMVL_LY"
+#' - "IIRR_weighting"
+#' - "JMVL_Liang"
+#' - "imputation_LME"
+#' - "JMVL_G"
 #' @param LM_fixedEffect_withTime_variables
 #' @param LM_randomEffect_variables
 #' @param optCtrl
 #' @param VPM_variables
 #' @param LM_fixedEffect_withoutTime_variables
 #' @param control
-#' @param ...
+#' @param ... Additional arguments to `nleqslv::nleqslv()`
 #'
 #' @return
 #' @export
@@ -443,12 +451,13 @@ long_est <- function(long_data,
       # imp_time_factor = 0.5
       # group the data based on the time factor
       data <- data %>%
-        mutate(time_new = ceiling(time / imp_time_factor)) %>%
-        group_by(id, time_new) %>%
-        mutate(Y_mean = mean(Y, na.rm = TRUE)) %>%
+        dplyr::mutate(time_new = ceiling(time / imp_time_factor)) %>%
+        dplyr::group_by(id, time_new) %>%
+        dplyr::mutate(Y_mean = mean(Y, na.rm = TRUE)) %>%
         # mutate(Y_mean = ifelse(is.numeric(Y_mean),Y_mean,NA)) %>%
         dplyr::select(id, Y_mean, time_new, setdiff(names(data), c("id", "Y", "time"))) %>%
-        ungroup()
+        dplyr::ungroup()
+
       colnames(data)[2:3] <- c("Y", "time")
 
       # create a new dataset with the same columns in data1. For a given id, the time is from 1 to max_time. If there is no value of Y at a given time, then Y is NA.
@@ -459,12 +468,12 @@ long_est <- function(long_data,
         dplyr::select(-Y, -time) %>%
         unique()
       data_full <- data_base %>%
-        slice(rep(1:n(), each = max_time)) %>%
-        group_by(id) %>%
-        mutate(time = rep(1:max_time))
+        dplyr::slice(rep(1:n(), each = max_time)) %>%
+        dplyr::group_by(id) %>%
+        dplyr::mutate(time = rep(1:max_time))
 
       # merge two datasets, this is the dataset to be imputed
-      data3 <- left_join(data_full, data, by = setdiff(names(data_full), "Y"))
+      data3 <- dplyr::left_join(data_full, data, by = setdiff(names(data_full), "Y"))
 
       # rescale the time variable for imputation and analysis
       data3$time <- data3$time * imp_time_factor
@@ -472,7 +481,7 @@ long_est <- function(long_data,
 
     print("start imputation...")
     # empty imputation
-    imp0 <- mice(as.matrix(data3), maxit = 0)
+    imp0 <- mice::mice(as.matrix(data3), maxit = 0)
     predM <- imp0$predictorMatrix
     impM <- imp0$method
 
@@ -491,9 +500,9 @@ long_est <- function(long_data,
 
     lme_imp <- function(data_imp) {
       lme_model_formula <- paste("Y ~", paste(LM_fixedEffect_withTime_variables, collapse = "+"), "+(1+", paste(LM_randomEffect_variables, collapse = "+"), "|id)")
-      lme_model <- lmer(lme_model_formula,
+      lme_model <- lme4::lmerlmer(lme_model_formula,
                         data = data_imp, REML = TRUE,
-                        control = lmerControl(optCtrl = list(optimizer = "optimx", optCtrl = list(method = "L-BFGS-B"), maxfun = 50000))
+                        control = lme4::lmerControl(optCtrl = list(optimizer = "optimx", optCtrl = list(method = "L-BFGS-B"), maxfun = 50000))
       )
       (beta_hat <- summary(lme_model)$coef[, 1])
     }
