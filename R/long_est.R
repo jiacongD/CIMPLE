@@ -10,12 +10,12 @@
 #' - "JMVL_Liang"
 #' - "imputation_LME"
 #' - "JMVL_G"
-#' @param LM_fixedEffect_withTime_variables
-#' @param LM_randomEffect_variables
-#' @param optCtrl
-#' @param VPM_variables
-#' @param LM_fixedEffect_withoutTime_variables
-#' @param control
+#' @param LM_fixedEffect_withTime_variables: Vector input of variable names with fixed effects in the longitudinal model. (need to check which method requires this input, which doesn’t.)
+#' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model. 
+#' @param optCtrl: control parameters for runing the mixed-effect model. See "control" argument in the lme4::lmer (https://cran.r-project.org/web/packages/lme4/index.html).
+#' @param VPM_variables: Vector input of variable names in the visiting process model. 
+#' @param LM_fixedEffect_withoutTime_variables: we don’t need this. But we need a variable called “time”, which is for “variable name for the observational time”.
+#' @param control: control parameters for the JMVL-G method, including: (1) verbose: TRUE or FALSE for outputing checkpoint after each iteration. Default is FALSE. (2) tol1, tol2, tol3: actually I’m thinking of insteading of using 1,2,3, we can set them to be the same and just use one variable “tol”. tole: Tolerance for convergence. (3) GHk: number of gaussian-hermite quadrature points. Default is 10? (4)typeGH: we don’t need this.(5) maxiter: maximum number of iteration. Default is ?
 #' @param ... Additional arguments to `nleqslv::nleqslv()`
 #'
 #' @return
