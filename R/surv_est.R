@@ -9,10 +9,10 @@
 #' - "Imputation_Cox"
 #' - "VAImputation_Cox"
 #' @param surv_data Survival data
-#' @param LM_fixedEffect_withTime_variables
-#' @param LM_randomEffect_variables
-#' @param SM_variables
-#' @param SM_base_variables
+#' @param LM_fixedEffect_withTime_variables: Vector input of variable names with fixed effects in the longitudinal model. 
+#' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model. 
+#' @param SM_variables: Instead of using SM_variables, we can add an argument of “time_varying_var”, which is the variable name(s) for time-varying variables in the survival model. We can then create SM_variables by combining time_varying_var and SM_base_variables. Also we may want to stick to either use “var” or “variables”. 
+#' @param SM_base_variables: Vector input of variable names for time-invariant variables in the survival model.
 #' @param imp_time_factor
 #'
 #' @return
