@@ -10,11 +10,12 @@
 #' - "JMVL_Liang"
 #' - "imputation_LME"
 #' - "JMVL_G"
-#' @param LM_fixedEffect_withTime_variables: Vector input of variable names with fixed effects in the longitudinal model. (need to check which method requires this input, which doesn’t.)
-#' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model. 
+#' @param LM_fixedEffect_withTime_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain time.
+#' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model.
 #' @param optCtrl: control parameters for runing the mixed-effect model. See "control" argument in the lme4::lmer (https://cran.r-project.org/web/packages/lme4/index.html).
-#' @param VPM_variables: Vector input of variable names in the visiting process model. 
-#' @param LM_fixedEffect_withoutTime_variables: we don’t need this. But we need a variable called “time”, which is for “variable name for the observational time”.
+#' @param VPM_variables: Vector input of variable names in the visiting process model.
+#' @param LM_fixedEffect_withoutTime_variables: we don’t need this. But we need a variable called “time”, which is for “”.
+#' @param time: Variable name for the observational time.
 #' @param control: control parameters for the JMVL-G method, including: (1) verbose: TRUE or FALSE for outputing checkpoint after each iteration. Default is FALSE. (2) tol1, tol2, tol3: actually I’m thinking of insteading of using 1,2,3, we can set them to be the same and just use one variable “tol”. tole: Tolerance for convergence. (3) GHk: number of gaussian-hermite quadrature points. Default is 10? (4)typeGH: we don’t need this.(5) maxiter: maximum number of iteration. Default is ?
 #' @param ... Additional arguments to `nleqslv::nleqslv()`
 #'
@@ -25,7 +26,8 @@
 long_est <- function(long_data,
                      method,
                      ...,
-                     LM_fixedEffect_withTime_variables = NULL,
+                     LM_fixedEffect_variables = NULL,
+                     time = NULL,
                      LM_fixedEffect_withoutTime_variables = NULL,
                      LM_randomEffect_variables = NULL,
                      VPM_variables = NULL,
@@ -37,9 +39,12 @@ long_est <- function(long_data,
                                     GHk = 10,
                                     typeGH = "simple",
                                     maxiter = 150)) {
+  LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, time)
+
+
   if (method == "standard_LME") {
     # Check Inputs
-    stopifnot("`LM_fixedEffect_withTime_variables` must be provided." = !is.null(LM_fixedEffect_withTime_variables))
+    stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
     stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
 
     lme_model_formula <- paste(
@@ -67,7 +72,7 @@ long_est <- function(long_data,
     return(result)
   } else if (method == "VA_LME") {
     # Check Inputs
-    stopifnot("`LM_fixedEffect_withTime_variables` must be provided." = !is.null(LM_fixedEffect_withTime_variables))
+    stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
     stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
 
     # add the visit number
@@ -208,8 +213,7 @@ long_est <- function(long_data,
   } else if (method == "IIRR_weighting") {
     # Check Inputs
     stopifnot("`VPM_variables` must be provided." = !is.null(VPM_variables))
-    stopifnot("`LM_fixedEffect_withoutTime_variables` must be provided." = !is.null(LM_fixedEffect_withoutTime_variables))
-    stopifnot("`LM_fixedEffect_withTime_variables` must be provided." = !is.null(LM_fixedEffect_withTime_variables))
+    stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
 
 
     data <- long_data
@@ -438,9 +442,9 @@ long_est <- function(long_data,
   } else if (method == "imputation_LME") {
     # Check Inputs
     stopifnot("`imp_time_factor` must be provided." = !is.null(imp_time_factor))
-    stopifnot("`LM_fixedEffect_withTime_variables` must be provided." = !is.null(LM_fixedEffect_withTime_variables))
+    stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
     stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
-    stopifnot("`LM_fixedEffect_withoutTime_variables` must be provided." = !is.null(LM_fixedEffect_withoutTime_variables))
+    stopifnot("`time` must be provided." = !is.null(time))
 
     data <- long_data
     if (is.null(imp_time_factor)) {
@@ -518,8 +522,8 @@ long_est <- function(long_data,
   } else if (method == "JMVL_G") {
     # Check Inputs
     stopifnot("`VPM_variables` must be provided." = !is.null(VPM_variables))
-    stopifnot("`LM_fixedEffect_withoutTime_variables` must be provided." = !is.null(LM_fixedEffect_withoutTime_variables))
-    stopifnot("`LM_fixedEffect_withTime_variables` must be provided." = !is.null(LM_fixedEffect_withTime_variables))
+    stopifnot("`time` must be provided." = !is.null(time))
+    stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
 
     time.end <- max(long_data$time, na.rm = TRUE)
     long_data_org <- long_data
