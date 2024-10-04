@@ -10,13 +10,12 @@
 #' - "JMVL_Liang"
 #' - "imputation_LME"
 #' - "JMVL_G"
-#' @param LM_fixedEffect_withTime_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain time.
-#' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model.
+#' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain time.
+#' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model. This argument is NULL for methods including, JMVL_LY, JMVL_G and IIRR_weighting.
 #' @param optCtrl: control parameters for runing the mixed-effect model. See "control" argument in the lme4::lmer (https://cran.r-project.org/web/packages/lme4/index.html).
 #' @param VPM_variables: Vector input of variable names in the visiting process model.
-#' @param LM_fixedEffect_withoutTime_variables: we don’t need this. But we need a variable called “time”, which is for “”.
 #' @param time: Variable name for the observational time.
-#' @param control: control parameters for the JMVL-G method, including: (1) verbose: TRUE or FALSE for outputing checkpoint after each iteration. Default is FALSE. (2) tol1, tol2, tol3: actually I’m thinking of insteading of using 1,2,3, we can set them to be the same and just use one variable “tol”. tole: Tolerance for convergence. (3) GHk: number of gaussian-hermite quadrature points. Default is 10? (4)typeGH: we don’t need this.(5) maxiter: maximum number of iteration. Default is ?
+#' @param control: control parameters for the JMVL_G method, including: (1) verbose: TRUE or FALSE for outputting checkpoint after each iteration. Default is FALSE. (2) tol: tolerance for convergence (3) GHk: number of gaussian-hermite quadrature points. Default is 10. (5) maxiter: maximum number of iteration. Default is 150.
 #' @param ... Additional arguments to `nleqslv::nleqslv()`
 #'
 #' @return
@@ -28,16 +27,12 @@ long_est <- function(long_data,
                      ...,
                      LM_fixedEffect_variables = NULL,
                      time = NULL,
-                     LM_fixedEffect_withoutTime_variables = NULL,
                      LM_randomEffect_variables = NULL,
                      VPM_variables = NULL,
                      optCtrl = list(method = "nlminb", kkt = FALSE, tol = 0.2, maxit = 20000),
-                     control = list(verbose = TRUE,
-                                    tol1 = 1e-3,
-                                    tol2 = 1e-3,
-                                    tol3 = 1e-3,
+                     control = list(verbose = FALSE,
+                                    tol = 1e-3,
                                     GHk = 10,
-                                    typeGH = "simple",
                                     maxiter = 150)) {
   LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, time)
 
@@ -106,7 +101,7 @@ long_est <- function(long_data,
   } else if (method == "JMVL_LY") {
     # Check Inputs
     stopifnot("`VPM_variables` must be provided." = !is.null(VPM_variables))
-    stopifnot("`LM_fixedEffect_withoutTime_variables` must be provided." = !is.null(LM_fixedEffect_withoutTime_variables))
+    stopifnot("`time` must be provided." = !is.null(time))
 
     data <- long_data
 
@@ -116,9 +111,9 @@ long_est <- function(long_data,
     V <- as.matrix(V[, VPM_variables]) # variables affecting the visiting process
 
     # variables in the longitudinal process
-    X <- data[, c("id", LM_fixedEffect_withoutTime_variables)]
+    X <- data[, c("id", LM_fixedEffect_variables)]
     XX <- as.matrix(X[!duplicated(X), -1])
-    X <- as.matrix(X[, LM_fixedEffect_withoutTime_variables])
+    X <- as.matrix(X[, LM_fixedEffect_variables])
 
     temp <- data %>%
       dplyr::group_by(id) %>%
@@ -224,9 +219,9 @@ long_est <- function(long_data,
     V <- as.matrix(V[, VPM_variables]) # variables affecting the visiting process
 
     # variables in the longitudinal process
-    X <- data[, c("id", LM_fixedEffect_withoutTime_variables)]
+    X <- data[, c("id", LM_fixedEffect_variables)]
     XX <- as.matrix(X[!duplicated(X), -1])
-    X <- as.matrix(X[, LM_fixedEffect_withoutTime_variables])
+    X <- as.matrix(X[, LM_fixedEffect_variables])
 
     temp <- data %>%
       dplyr::group_by(id) %>%
@@ -294,7 +289,7 @@ long_est <- function(long_data,
   } else if (method == "JMVL_Liang") {
     # Check Inputs
     stopifnot("`VPM_variables` must be provided." = !is.null(VPM_variables))
-    stopifnot("`LM_fixedEffect_withoutTime_variables` must be provided." = !is.null(LM_fixedEffect_withoutTime_variables))
+    stopifnot("`time` must be provided." = !is.null(time))
     stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
 
     data <- long_data
@@ -305,9 +300,9 @@ long_est <- function(long_data,
     V <- as.matrix(V[, VPM_variables]) # variables affecting the visiting process
 
     # variables in the longitudinal process
-    X <- data[, c("id", LM_fixedEffect_withoutTime_variables)]
+    X <- data[, c("id", LM_fixedEffect_variables)]
     XX <- as.matrix(X[!duplicated(X), -1])
-    X <- as.matrix(X[, LM_fixedEffect_withoutTime_variables])
+    X <- as.matrix(X[, LM_fixedEffect_variables])
 
     # variables with random effect in the longitudinal process
     Q <- data[, LM_randomEffect_variables, drop = FALSE] # variables with random effect
@@ -559,7 +554,7 @@ long_est <- function(long_data,
 
     # Data preparation: LP data
     long_data_censor <- long_data_org %>%
-      dplyr::select(c("id", all_of(LM_fixedEffect_withoutTime_variables))) %>%
+      dplyr::select(c("id", all_of(LM_fixedEffect_variables))) %>%
       dplyr::group_by(id) %>%
       dplyr::slice(n()) %>%
       dplyr::mutate(time = max(long_data_org$time, na.rm = TRUE), Y = NA)
@@ -853,8 +848,8 @@ long_est <- function(long_data,
         if (lgLik[it] > lgLik[it - 1]) {
           thetas1 <- c(Y_mat[it - 1, ], S_mat[it - 1, ], B_mat[it - 1, ], Rho_mat[it - 1])
           thetas2 <- c(Y_mat[it, ], S_mat[it, ], B_mat[it, ], Rho_mat[it])
-          check1 <- max(abs(thetas2 - thetas1) / (abs(thetas1) + control$tol1)) < control$tol2
-          check2 <- (lgLik[it] - lgLik[it - 1]) < control$tol3 * (abs(lgLik[it - 1]) + control$tol3)
+          check1 <- max(abs(thetas2 - thetas1) / (abs(thetas1) + control$tol)) < control$tol
+          check2 <- (lgLik[it] - lgLik[it - 1]) < control$tol * (abs(lgLik[it - 1]) + control$tol)
           if (check1 || check2) {
             # if (check1) {
             conv <- FALSE # why set this to FALSE?
