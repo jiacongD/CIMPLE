@@ -4,19 +4,13 @@ test_that("The `standard_lme` method in long_est() works", {
   time_var <- "time"
   id_var <- "id"
   VPM_variables <- c("Z", "X")
-  LM_fixedEffect_withoutTime_variables <- c("Z", "X")
-  LM_fixedEffect_withTime_variables <- c(c("Z", "X"), time_var)
+  LM_fixedEffect_variables <- c("Z", "X")
   LM_randomEffect_variables <- "Z"
 
-  # Read in data
-  long_data <- read.csv(testthat::test_path("test-data", "train_data.csv"))
-  colnames(long_data)[which(colnames(long_data) == id_var)] <- "id"
-  colnames(long_data)[which(colnames(long_data) == outcome_var)] <- "Y"
-  colnames(long_data)[which(colnames(long_data) == time_var)] <- "time"
-
   # Fit model
-  fit_standardLME <- long_est(long_data = long_data, method = "standard_LME",
-                              LM_fixedEffect_withTime_variables = LM_fixedEffect_withTime_variables,
+  fit_standardLME <- long_est(long_data = train_data, method = "standard_LME",
+                              id_var = id_var, outcome_var = outcome_var, time = time_var,
+                              LM_fixedEffect_variables = LM_fixedEffect_variables,
                               LM_randomEffect_variables = LM_randomEffect_variables)
   # Extract coefficients
   beta_hat <- unname(fit_standardLME$beta_hat)
