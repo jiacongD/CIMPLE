@@ -25,6 +25,8 @@
 long_est <- function(long_data,
                      method,
                      ...,
+                     id_var,
+                     outcome_var,
                      LM_fixedEffect_variables = NULL,
                      time = NULL,
                      LM_randomEffect_variables = NULL,
@@ -34,6 +36,9 @@ long_est <- function(long_data,
                                     tol = 1e-3,
                                     GHk = 10,
                                     maxiter = 150)) {
+  colnames(long_data)[which(colnames(long_data) == id_var)] <- "id"
+  colnames(long_data)[which(colnames(long_data) == outcome_var)] <- "Y"
+  colnames(long_data)[which(colnames(long_data) == time)] <- "time"
   LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, time)
 
 

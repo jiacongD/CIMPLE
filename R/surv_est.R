@@ -9,30 +9,43 @@
 #' - "Imputation_Cox"
 #' - "VAImputation_Cox"
 #' @param surv_data Survival data
-#' @param LM_fixedEffect_withTime_variables: Vector input of variable names with fixed effects in the longitudinal model. 
-#' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model. 
-#' @param SM_variables: Instead of using SM_variables, we can add an argument of “time_varying_var”, which is the variable name(s) for time-varying variables in the survival model. We can then create SM_variables by combining time_varying_var and SM_base_variables. Also we may want to stick to either use “var” or “variables”. 
-#' @param SM_base_variables: Vector input of variable names for time-invariant variables in the survival model.
-#' @param imp_time_factor
+#' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model.
+#' @param time: Variable name for the observational time.
+#' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model.
+#' @param SM_variables: Instead of using SM_variables, we can add an argument of “time_varying_var”, which is the variable name(s) for time-varying variables in the survival model. We can then create SM_variables by combining time_varying_var and SM_timeInvariant_variables. Also we may want to stick to either use “var” or “variables”.
+#' @param SM_timeInvariant_variables: Vector input of variable names for time-invariant variables in the survival model.
+#' @param imp_time_factor: Imputation time factor
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#'
+#'
 surv_est <- function(long_data,
-                     method,
                      surv_data,
-                     LM_fixedEffect_withTime_variables = NULL,
+                     method,
+                     id_var,
+                     LM_fixedEffect_variables = NULL,
+                     time = NULL,
                      LM_randomEffect_variables = NULL,
-                     SM_variables = NULL,
-                     SM_base_variables = NULL,
+                     SM_timeVarying_variables = NULL,
+                     SM_timeInvariant_variables = NULL,
                      imp_time_factor = NULL) {
+  colnames(long_data)[which(colnames(long_data) == id_var)] <- "id"
+  colnames(long_data)[which(colnames(long_data) == outcome_var)] <- "Y"
+  colnames(long_data)[which(colnames(long_data) == time)] <- "time"
+
+  LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, time)
+  SM_variables <- c(SM_timeVarying_variables, SM_timeInvariant_variables)
+
   if (method == "cox") {
     # Check Inputs
-    stopifnot("`LM_fixedEffect_withTime_variables` must be provided." = !is.null(LM_fixedEffect_withTime_variables))
+    stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
+    stopifnot("`time` must be provided." = !is.null(time))
     stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
-    stopifnot("`SM_variables` must be provided." = !is.null(SM_variables))
-    stopifnot("`SM_base_variables` must be provided." = !is.null(SM_base_variables))
+    stopifnot("`SM_timeVarying_variables` must be provided." = !is.null(SM_timeVarying_variables))
+    stopifnot("`SM_timeInvariant_variables` must be provided." = !is.null(SM_timeInvariant_variables))
 
 
     long_data2 <- long_data %>%
@@ -52,9 +65,11 @@ surv_est <- function(long_data,
     return(alpha.hat)
   } else if (method == "JMLD") {
     # Check Inputs
-    stopifnot("`LM_fixedEffect_withTime_variables` must be provided." = !is.null(LM_fixedEffect_withTime_variables))
+    stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
+    stopifnot("`time` must be provided." = !is.null(time))
     stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
-    stopifnot("`SM_base_variables` must be provided." = !is.null(SM_base_variables))
+    stopifnot("`SM_timeVarying_variables` must be provided." = !is.null(SM_timeVarying_variables))
+    stopifnot("`SM_timeInvariant_variables` must be provided." = !is.null(SM_timeInvariant_variables))
 
     # remove patients with no Y measurement
     zeroRecords_id <- long_data[is.na(long_data$Y), "id"]
@@ -78,7 +93,7 @@ surv_est <- function(long_data,
     # print(lmeFit)
 
     # survival submodel
-    coxFit_formula <- as.formula(paste("Surv(D, d) ~ ", paste(SM_base_variables, collapse = "+")))
+    coxFit_formula <- as.formula(paste("Surv(D, d) ~ ", paste(SM_timeInvariant_variables, collapse = "+")))
     coxFit <- survival::coxph(coxFit_formula, data = surv_data, x = TRUE)
     # summary(coxFit)
 
@@ -98,9 +113,12 @@ surv_est <- function(long_data,
     return(results)
   } else if (method == "VA_JMLD") {
     # Check Inputs
-    stopifnot("`LM_fixedEffect_withTime_variables` must be provided." = !is.null(LM_fixedEffect_withTime_variables))
+    stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
+    stopifnot("`time` must be provided." = !is.null(time))
     stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
-    stopifnot("`SM_base_variables` must be provided." = !is.null(SM_base_variables))
+    stopifnot("`SM_timeVarying_variables` must be provided." = !is.null(SM_timeVarying_variables))
+    stopifnot("`SM_timeInvariant_variables` must be provided." = !is.null(SM_timeInvariant_variables))
+
 
     # remove patients with no Y measurement
     zeroRecords_id <- long_data[is.na(long_data$Y), "id"]
@@ -132,7 +150,7 @@ surv_est <- function(long_data,
     print(lmeFit)
 
     # survival submodel
-    coxFit_formula <- as.formula(paste("Surv(D, d) ~ ", paste(SM_base_variables, collapse = "+")))
+    coxFit_formula <- as.formula(paste("Surv(D, d) ~ ", paste(SM_timeInvariant_variables, collapse = "+")))
     coxFit <- survival::coxph(coxFit_formula, data = surv_data, x = TRUE)
     summary(coxFit)
 
@@ -152,9 +170,12 @@ surv_est <- function(long_data,
     return(results)
   } else if (method == "Imputation_Cox") {
     # Check Inputs
-    stopifnot("`LM_fixedEffect_withTime_variables` must be provided." = !is.null(LM_fixedEffect_withTime_variables))
+    stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
+    stopifnot("`time` must be provided." = !is.null(time))
     stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
-    stopifnot("`SM_base_variables` must be provided." = !is.null(SM_base_variables))
+    stopifnot("`SM_timeVarying_variables` must be provided." = !is.null(SM_timeVarying_variables))
+    stopifnot("`SM_timeInvariant_variables` must be provided." = !is.null(SM_timeInvariant_variables))
+
 
     data <- long_data
     if (is.null(imp_time_factor)) {
@@ -238,7 +259,12 @@ surv_est <- function(long_data,
     return(alpha.hat)
   } else if (method == "VAImputation_Cox") {
     # Check Inputs
-    stopifnot("`SM_variables` must be provided." = !is.null(SM_variables))
+    stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
+    stopifnot("`time` must be provided." = !is.null(time))
+    stopifnot("`LM_randomEffect_variables` must be provided." = !is.null(LM_randomEffect_variables))
+    stopifnot("`SM_timeVarying_variables` must be provided." = !is.null(SM_timeVarying_variables))
+    stopifnot("`SM_timeInvariant_variables` must be provided." = !is.null(SM_timeInvariant_variables))
+
 
     data <- long_data
 
