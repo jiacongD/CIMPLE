@@ -3,8 +3,8 @@
 #' @param long_data Long dataset
 #' @param method
 #' Either:
-#' - "standard_LME"
-#' - "VA_LME"
+#' - "standard_LME": Standard linear mixed-effect model.
+#' - "VA_LME": linear mixed-effect model adjusted for the historical number of visits.
 #' - "JMVL_LY"
 #' - "IIRR_weighting"
 #' - "JMVL_Liang"
