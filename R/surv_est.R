@@ -1,20 +1,21 @@
 #' surv_est
 #'
-#' @param long_data Long dataset
+#' @param long_data Long dataset.
+#' @param surv_data Survival dataset.
 #' @param method
 #' Either:
-#' - "cox"
-#' - "JMLD"
-#' - "VA_JMLD"
-#' - "Imputation_Cox"
-#' - "VAImputation_Cox"
-#' @param surv_data Survival data
+#' - "cox": Cox proportional hazard model with time-varying covariates.
+#' - "JMLD": Joint modeling the longitudinal and disease diagnosis processes.
+#' - "VA_JMLD": Joint modeling the longitudinal and disease diagnosis processes with an adjustment for the historical number of visits in the longitudinal model.
+#' - "Imputation_Cox": Cox proportional hazard model with time-varying covariates after imputation.
+#' - "VAImputation_Cox": Cox proportional hazard model with time-varying covariates after imputation with an adjustment for the historical number of visits in the longitudinal model.
+#' @param id_var: Variable name for the subject ID to indicate the grouping structure.
 #' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model.
 #' @param time: Variable name for the observational time.
 #' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model.
 #' @param SM_variables: Instead of using SM_variables, we can add an argument of “time_varying_var”, which is the variable name(s) for time-varying variables in the survival model. We can then create SM_variables by combining time_varying_var and SM_timeInvariant_variables. Also we may want to stick to either use “var” or “variables”.
 #' @param SM_timeInvariant_variables: Vector input of variable names for time-invariant variables in the survival model.
-#' @param imp_time_factor: Imputation time factor
+#' @param imp_time_factor: scale factor for the time variable. This argument is only needed in the imputation-based methods, e.g., Imputation_Cox and VAImputation_Cox. The default is NULL (no scale).
 #'
 #' @return
 #' @export

@@ -4,12 +4,14 @@
 #' @param method
 #' Either:
 #' - "standard_LME": Standard linear mixed-effect model.
-#' - "VA_LME": linear mixed-effect model adjusted for the historical number of visits.
-#' - "JMVL_LY"
-#' - "IIRR_weighting"
-#' - "JMVL_Liang"
-#' - "imputation_LME"
-#' - "JMVL_G"
+#' - "VA_LME": Linear mixed-effect model adjusted for the historical number of visits.
+#' - "JMVL_LY": Joint model of the visiting process and the longitudinal process accounting for measured confounders.
+#' - "IIRR_weighting": Inverse-intensity-rate-ratio weighting approach.
+#' - "JMVL_Liang": Joint model of the visiting process and the longitudinal process with dependent latent variables.
+#' - "imputation_LME": Imputation-based approach with linear mixed-effect model.
+#' - "JMVL_G": Joint model of the visiting process and the longitudinal process with shared random intercept.
+#' @param id_var: Variable name for the subject ID to indicate the grouping structure.
+#' @param outcome_var: Variable name for the longitudinal outcome variable.
 #' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain time.
 #' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model. This argument is NULL for methods including, JMVL_LY, JMVL_G and IIRR_weighting.
 #' @param optCtrl: control parameters for runing the mixed-effect model. See "control" argument in the lme4::lmer (https://cran.r-project.org/web/packages/lme4/index.html).
