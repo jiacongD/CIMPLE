@@ -40,11 +40,13 @@ long_est <- function(long_data,
                                     tol = 1e-3,
                                     GHk = 10,
                                     maxiter = 150)) {
+
+  stopifnot("Variable name for the observational time (`time`) must be named as 'time'."  != (time=="time"))
+
   colnames(long_data)[which(colnames(long_data) == id_var)] <- "id"
   colnames(long_data)[which(colnames(long_data) == outcome_var)] <- "Y"
   colnames(long_data)[which(colnames(long_data) == time)] <- "time"
   LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, time)
-
 
   if (method == "standard_LME") {
     # Check Inputs
@@ -54,6 +56,7 @@ long_est <- function(long_data,
     lme_model_formula <- paste(
       "Y ~",
       paste(LM_fixedEffect_withTime_variables, collapse = "+"),
+      # paste(LM_fixedEffect_variables, collapse = "+"),"+time",
       "+(1+",
       paste(LM_randomEffect_variables, collapse = "+"),
       "|id)"
