@@ -59,7 +59,7 @@ surv_est <- function(long_data,
     long_data2 <- na.omit(long_data2) %>%
       dplyr::group_by(id) %>%
       dplyr::mutate(d = ifelse(time < max(time, na.rm = TRUE), 0, d0))
-    model_formula <- as.formula(paste("Surv(time0, time, d) ~ ", paste(SM_variables, collapse = "+")))
+    model_formula <- as.formula(paste("survival::Surv(time0, time, d) ~ ", paste(SM_variables, collapse = "+")))
     model <- survival::coxph(model_formula, data = long_data2)
     alpha.hat <- summary(model)$coef[, 1]
 
@@ -96,7 +96,7 @@ surv_est <- function(long_data,
     # print(lmeFit)
 
     # survival submodel
-    coxFit_formula <- as.formula(paste("Surv(D, d) ~ ", paste(SM_timeInvariant_variables, collapse = "+")))
+    coxFit_formula <- as.formula(paste("survival::Surv(D, d) ~ ", paste(SM_timeInvariant_variables, collapse = "+")))
     coxFit <- survival::coxph(coxFit_formula, data = surv_data, x = TRUE)
     # summary(coxFit)
 
@@ -153,7 +153,7 @@ surv_est <- function(long_data,
     print(lmeFit)
 
     # survival submodel
-    coxFit_formula <- as.formula(paste("Surv(D, d) ~ ", paste(SM_timeInvariant_variables, collapse = "+")))
+    coxFit_formula <- as.formula(paste("survival::Surv(D, d) ~ ", paste(SM_timeInvariant_variables, collapse = "+")))
     coxFit <- survival::coxph(coxFit_formula, data = surv_data, x = TRUE)
     summary(coxFit)
 
@@ -213,7 +213,7 @@ surv_est <- function(long_data,
 
       # join the two datasets
       data3 <- dplyr::left_join(data2, data, by = dplyr::setdiff(names(data), c("Y")),multiple = "all")
-      
+
       data3$time <- data3$time * imp_time_factor # convert time back to the original scale
     }
 
@@ -252,7 +252,7 @@ surv_est <- function(long_data,
         dplyr::group_by(id) %>%
         dplyr::mutate(d = ifelse(time < max(time, na.rm = TRUE), 0, d0)) %>%
         dplyr::filter(time0 < time)
-      model_formula <- as.formula(paste("Surv(time0, time, d) ~ ", paste(SM_variables, collapse = "+")))
+      model_formula <- as.formula(paste("survival::Surv(time0, time, d) ~ ", paste(SM_variables, collapse = "+")))
       model <- survival::coxph(model_formula, data = long_data_imp2)
       (alpha.hat <- summary(model)$coef[, 1])
     }
@@ -364,7 +364,7 @@ surv_est <- function(long_data,
         dplyr::group_by(id) %>%
         dplyr::filter(time0 < time) %>%
         dplyr::mutate(d = ifelse(time < max(time, na.rm = TRUE), 0, d0))
-      model_formula <- as.formula(paste("Surv(time0, time, d) ~ ", paste(SM_variables, collapse = "+")))
+      model_formula <- as.formula(paste("survival::Surv(time0, time, d) ~ ", paste(SM_variables, collapse = "+")))
       model <- survival::coxph(model_formula, data = long_data_imp2)
       (alpha.hat <- summary(model)$coef[, 1])
     }

@@ -129,7 +129,7 @@ long_est <- function(long_data,
 
     temp <- data %>%
       dplyr::group_by(id) %>%
-      dplyr::summarize(C = max(time), ni = n())
+      dplyr::summarize(C = max(time), ni = dplyr::n())
     C <- rep(max(na.omit(data$time)), nrow(VV)) # censoring time, in our case, it is the same for all subjects
 
     ni <- temp$ni # number of observations per subject
@@ -479,7 +479,7 @@ long_est <- function(long_data,
         dplyr::select(-Y, -time) %>%
         unique()
       data_full <- data_base %>%
-        dplyr::slice(rep(1:n(), each = max_time)) %>%
+        dplyr::slice(rep(1:dplyr::n(), each = max_time)) %>%
         dplyr::group_by(id) %>%
         dplyr::mutate(time = rep(1:max_time))
 
@@ -544,7 +544,7 @@ long_est <- function(long_data,
     vp_data_censor <- long_data_org %>%
       dplyr::select(c("id", all_of(VPM_variables))) %>%
       dplyr::group_by(id) %>%
-      dplyr::slice(n()) %>%
+      dplyr::slice(dplyr::n()) %>%
       dplyr::mutate(time = max(long_data_org$time, na.rm = TRUE))
 
     vp_data0 <- long_data_org[, c("id", VPM_variables, "time")]
@@ -568,7 +568,7 @@ long_est <- function(long_data,
     long_data_censor <- long_data_org %>%
       dplyr::select(c("id", all_of(LM_fixedEffect_variables))) %>%
       dplyr::group_by(id) %>%
-      dplyr::slice(n()) %>%
+      dplyr::slice(dplyr::n()) %>%
       dplyr::mutate(time = max(long_data_org$time, na.rm = TRUE), Y = NA)
 
     long_data1 <- merge(long_data_org, long_data_censor, by = c("id", LM_fixedEffect_withTime_variables), all = TRUE) %>%
