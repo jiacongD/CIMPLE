@@ -213,7 +213,7 @@ long_est <- function(long_data,
 
     results <- list(
       gamma.hat = gamma.hat,
-      beta_hat_LY = beta_hat_LY
+      beta_hat = beta_hat_LY
     )
 
     return(results)
@@ -294,7 +294,7 @@ long_est <- function(long_data,
 
     results <- list(
       gamma.hat = gamma.hat,
-      beta_hat_weightedGEE = beta_hat_weightedGEE
+      beta_hat = beta_hat_weightedGEE
     )
 
     return(results)
@@ -442,7 +442,7 @@ long_est <- function(long_data,
 
     results <- list(
       gamma.hat = gamma.hat,
-      beta.hat = beta.hat
+      beta_hat = beta_hat
     )
 
     return(results)
@@ -524,7 +524,7 @@ long_est <- function(long_data,
     beta_hat <- sapply(seq_along(fit[[1]]), function(i) mean(sapply(fit, `[`, i)))
     names(beta_hat) <- names(fit[[1]])
 
-    results <- list(beta.hat = beta_hat)
+    results <- list(beta_hat = beta_hat)
     return(results)
   } else if (method == "JMVL_G") {
     # Check Inputs
@@ -894,7 +894,7 @@ long_est <- function(long_data,
       sigma2_b = sigma2_b,
       rho = rho
     )
-    results <- list(betas=betas,estimates = estimates, check_points = check_points)
+    results <- list(beta_hat = betas, estimates = estimates, check_points = check_points)
     return(results)
   }
 }

@@ -109,8 +109,8 @@ surv_est <- function(long_data,
     long_proc <- unlist(fixef(jointFit))
 
     results <- list(
-      "long_proc" = long_proc, # beta_hat
-      "surv_proc" = surv_proc # alpha_hat
+      beta_hat = long_proc, # beta_hat
+      alpha_hat = surv_proc # alpha_hat
     )
 
     return(results)
@@ -166,8 +166,8 @@ surv_est <- function(long_data,
     long_proc <- unlist(nlme::fixef(jointFit))
 
     results <- list(
-      "long_proc" = long_proc,
-      "surv_proc" = surv_proc
+      beta_hat = long_proc, # beta_hat
+      alpha_hat = surv_proc # alpha_hat
     )
 
     return(results)
