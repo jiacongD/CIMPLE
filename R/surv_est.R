@@ -10,10 +10,10 @@
 #' - "Imputation_Cox": Cox proportional hazard model with time-varying covariates after imputation.
 #' - "VAImputation_Cox": Cox proportional hazard model with time-varying covariates after imputation with an adjustment for the historical number of visits in the longitudinal model.
 #' @param id_var: Variable name for the subject ID to indicate the grouping structure.
-#' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model.
 #' @param time: Variable name for the observational time.
+#' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model.
 #' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model.
-#' @param SM_variables: Instead of using SM_variables, we can add an argument of “time_varying_var”, which is the variable name(s) for time-varying variables in the survival model. We can then create SM_variables by combining time_varying_var and SM_timeInvariant_variables. Also we may want to stick to either use “var” or “variables”.
+#' @param SM_timeVarying_variables: Vector input of variable names for time-varying variables in the survival model.
 #' @param SM_timeInvariant_variables: Vector input of variable names for time-invariant variables in the survival model.
 #' @param imp_time_factor: scale factor for the time variable. This argument is only needed in the imputation-based methods, e.g., Imputation_Cox and VAImputation_Cox. The default is NULL (no scale).
 #'
@@ -27,14 +27,14 @@ surv_est <- function(long_data,
                      surv_data,
                      method,
                      id_var,
-                     LM_fixedEffect_variables = NULL,
                      time = NULL,
+                     LM_fixedEffect_variables = NULL,
                      LM_randomEffect_variables = NULL,
                      SM_timeVarying_variables = NULL,
                      SM_timeInvariant_variables = NULL,
                      imp_time_factor = NULL) {
   colnames(long_data)[which(colnames(long_data) == id_var)] <- "id"
-  colnames(long_data)[which(colnames(long_data) == outcome_var)] <- "Y"
+  colnames(long_data)[which(colnames(long_data) == SM_timeVarying_variables)] <- "Y"
   colnames(long_data)[which(colnames(long_data) == time)] <- "time"
 
   LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, time)
@@ -210,7 +210,8 @@ surv_est <- function(long_data,
       data2 <- data2[data2$time <= ceiling(data2$D / imp_time_factor), dplyr::setdiff(names(data2), c("Y"))]
 
       # join the two datasets
-      data3 <- dplyr::left_join(data2, data, by = dplyr::setdiff(names(data), c("Y")))
+      data3 <- dplyr::left_join(data2, data, by = dplyr::setdiff(names(data), c("Y")),multiple = "all")
+      
       data3$time <- data3$time * imp_time_factor # convert time back to the original scale
     }
 
@@ -300,7 +301,7 @@ surv_est <- function(long_data,
       data2 <- data2[data2$time <= ceiling(data2$D / imp_time_factor), dplyr::setdiff(names(data2), c("Y"))]
 
       # join the two datasets
-      data3 <- dplyr::left_join(data2, data, by = dplyr::setdiff(names(data), c("Y")))
+      data3 <- dplyr::left_join(data2, data, by = dplyr::setdiff(names(data), c("Y")),multiple = "all")
       data3$time <- data3$time * imp_time_factor # convert time back to the original scale
     }
 

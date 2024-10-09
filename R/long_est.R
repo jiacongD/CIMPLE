@@ -11,12 +11,13 @@
 #' - "imputation_LME": Imputation-based approach with linear mixed-effect model.
 #' - "JMVL_G": Joint model of the visiting process and the longitudinal process with shared random intercept.
 #' @param id_var: Variable name for the subject ID to indicate the grouping structure.
+#' @param time: Variable name for the observational time.
 #' @param outcome_var: Variable name for the longitudinal outcome variable.
 #' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain time.
 #' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model. This argument is NULL for methods including, JMVL_LY, JMVL_G and IIRR_weighting.
-#' @param optCtrl: control parameters for runing the mixed-effect model. See "control" argument in the lme4::lmer (https://cran.r-project.org/web/packages/lme4/index.html).
 #' @param VPM_variables: Vector input of variable names in the visiting process model.
-#' @param time: Variable name for the observational time.
+#' @param imp_time_factor: scale factor for the time variable. This argument is only needed in the imputation-based methods, e.g., Imputation_Cox and VAImputation_Cox. The default is NULL (no scale).
+#' @param optCtrl: control parameters for runing the mixed-effect model. See "control" argument in the lme4::lmer (https://cran.r-project.org/web/packages/lme4/index.html).
 #' @param control: control parameters for the JMVL_G method, including: (1) verbose: TRUE or FALSE for outputting checkpoint after each iteration. Default is FALSE. (2) tol: tolerance for convergence (3) GHk: number of gaussian-hermite quadrature points. Default is 10. (5) maxiter: maximum number of iteration. Default is 150.
 #' @param ... Additional arguments to `nleqslv::nleqslv()`
 #'
@@ -33,6 +34,7 @@ long_est <- function(long_data,
                      time = NULL,
                      LM_randomEffect_variables = NULL,
                      VPM_variables = NULL,
+                     imp_time_factor = NULL,
                      optCtrl = list(method = "nlminb", kkt = FALSE, tol = 0.2, maxit = 20000),
                      control = list(verbose = FALSE,
                                     tol = 1e-3,
@@ -506,7 +508,7 @@ long_est <- function(long_data,
 
     lme_imp <- function(data_imp) {
       lme_model_formula <- paste("Y ~", paste(LM_fixedEffect_withTime_variables, collapse = "+"), "+(1+", paste(LM_randomEffect_variables, collapse = "+"), "|id)")
-      lme_model <- lme4::lmerlmer(lme_model_formula,
+      lme_model <- lme4::lmer(lme_model_formula,
                         data = data_imp, REML = TRUE,
                         control = lme4::lmerControl(optCtrl = list(optimizer = "optimx", optCtrl = list(method = "L-BFGS-B"), maxfun = 50000))
       )
@@ -542,7 +544,6 @@ long_est <- function(long_data,
       dplyr::slice(n()) %>%
       dplyr::mutate(time = max(long_data_org$time, na.rm = TRUE))
 
-    head(vp_data_censor)
     vp_data0 <- long_data_org[, c("id", VPM_variables, "time")]
     vp_data1 <- merge(vp_data0, vp_data_censor, by = c("id", VPM_variables, "time"), all = TRUE) %>%
       dplyr::arrange(id, time)
@@ -552,7 +553,8 @@ long_est <- function(long_data,
       dplyr::group_by(id) %>%
       dplyr::mutate(d = ifelse(time == time.end, 0, 1)) %>%
       dplyr::mutate(
-        time0 = lag(time),
+        # time0 = lag(time), # Note: this was a bug
+        time0 = ifelse(is.na(lag(time)),0,lag(time)),
         s = time - time0
       ) %>%
       dplyr::select(id, all_of(VPM_variables), s, d) %>%
@@ -578,7 +580,6 @@ long_est <- function(long_data,
     # fit an lme object
     lme_model_fixed_formula <- as.formula(paste0("Y~", paste0(LM_fixedEffect_withTime_variables, collapse = "+")))
     lme_model_random_formula <- as.formula(paste("~1|id"))
-
     lme_model <- nlme::lme(lme_model_fixed_formula, data = na.omit(long_data), random = lme_model_random_formula, method = "ML", control = nlme::lmeControl(opt = "optim", msMaxIter = 5000, msMaxEval = 5000))
     lmeObject <- lme_model
 
@@ -690,7 +691,8 @@ long_est <- function(long_data,
         (f <- crossprod(W_unique, (partial_gamma * p_bys) %*% wGH))
         return(f)
       }
-      gammas_solve <- nleqslv::nleqslv(x = initial_values$gammas, gamma_eval, ..., control = list(trace = 0))
+      # gammas_solve <- nleqslv::nleqslv(x = initial_values$gammas, gamma_eval, ..., control = list(trace = 0)) # Note: this was a bug
+      gammas_solve = nleqslv::nleqslv(x=initial_values$gammas,gamma_eval,control = list(trace=0))
       (gammas_new <- gammas_solve$x)
 
       # longitudinal model
@@ -746,7 +748,7 @@ long_est <- function(long_data,
         results <- lapply(initial_guesses, function(guess) {
           tryCatch(
             {
-              nleqslv::nleqslv(guess, beta_eval, ..., method = "Newton")
+              nleqslv::nleqslv(guess, beta_eval, method = "Newton") # Note: this was a bug
             },
             error = function(e) {
               NULL
@@ -889,7 +891,7 @@ long_est <- function(long_data,
       sigma2_b = sigma2_b,
       rho = rho
     )
-    results <- list(estimates = estimates, check_points = check_points)
+    results <- list(betas=betas,estimates = estimates, check_points = check_points)
     return(results)
   }
 }
