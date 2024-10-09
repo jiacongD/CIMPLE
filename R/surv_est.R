@@ -106,7 +106,7 @@ surv_est <- function(long_data,
     # print(summary(jointFit))
 
     surv_proc <- unlist(coef(jointFit)) # change the name of the output to alpha
-    long_proc <- unlist(fixef(jointFit))
+    long_proc <- unlist(nlme::fixef(jointFit))
 
     results <- list(
       beta_hat = long_proc, # beta_hat
@@ -204,7 +204,7 @@ surv_est <- function(long_data,
         dplyr::select(-Y, -time) %>%
         unique()
       data2 <- data_base %>%
-        dplyr::slice(rep(1:n(), each = max_time)) %>%
+        dplyr::slice(rep(1:dplyr::n(), each = max_time)) %>%
         dplyr::group_by(id) %>%
         dplyr::mutate(time = rep(1:max_time))
       # delete time after the disease time
@@ -260,6 +260,7 @@ surv_est <- function(long_data,
     alpha.hat <- sapply(seq_along(fit[[1]]), function(i) mean(sapply(fit, `[`, i)))
     names(alpha.hat) <- names(fit[[1]])
 
+    names(alpha.hat)[which(names(alpha.hat) == "Y")] <- SM_timeVarying_variables
     return(alpha.hat)
   } else if (method == "VAImputation_Cox") {
     # Check Inputs
@@ -295,7 +296,7 @@ surv_est <- function(long_data,
         dplyr::select(-Y, -time) %>%
         unique()
       data2 <- data_base %>%
-        dplyr::slice(rep(1:n(), each = max_time)) %>%
+        dplyr::slice(rep(1:dplyr::n(), each = max_time)) %>%
         dplyr::group_by(id) %>%
         dplyr::mutate(time = rep(1:max_time))
       # delete time after the disease time
@@ -372,6 +373,7 @@ surv_est <- function(long_data,
     alpha.hat <- sapply(seq_along(fit[[1]]), function(i) mean(sapply(fit, `[`, i)))
     names(alpha.hat) <- names(fit[[1]])
 
+    names(alpha.hat)[which(names(alpha.hat) == "Y")] <- SM_timeVarying_variables
     return(alpha.hat)
   }
 }
