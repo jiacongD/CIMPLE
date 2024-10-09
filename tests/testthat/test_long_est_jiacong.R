@@ -122,9 +122,11 @@ fit_imputation_LME = long_est(long_data=train_data,
                                     maxiter = 150))
 fit_imputation_LME
 
+
+############# change the column names of the dataset and run the code again
 head(train_data)
 train_data1 <- train_data
-colnames(train_data1) <- c("id","trt","age","time","outcome")
+colnames(train_data1) <- c("id","trt","age","time","outcome") # change the column names
 
 time_var = "time"
 id_var = "id"

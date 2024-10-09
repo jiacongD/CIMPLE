@@ -38,7 +38,7 @@ surv_est <- function(long_data,
   colnames(long_data)[which(colnames(long_data) == time)] <- "time"
 
   LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, time)
-  SM_variables <- c(SM_timeVarying_variables, SM_timeInvariant_variables)
+  SM_variables <- c("Y", SM_timeInvariant_variables)
 
   if (method == "cox") {
     # Check Inputs
@@ -63,7 +63,9 @@ surv_est <- function(long_data,
     model <- survival::coxph(model_formula, data = long_data2)
     alpha.hat <- summary(model)$coef[, 1]
 
+    names(alpha.hat)[which(names(alpha.hat) == "Y")] <- SM_timeVarying_variables
     return(alpha.hat)
+
   } else if (method == "JMLD") {
     # Check Inputs
     stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
@@ -107,8 +109,8 @@ surv_est <- function(long_data,
     long_proc <- unlist(fixef(jointFit))
 
     results <- list(
-      "long_proc" = long_proc,
-      "surv_proc" = surv_proc
+      "long_proc" = long_proc, # beta_hat
+      "surv_proc" = surv_proc # alpha_hat
     )
 
     return(results)
