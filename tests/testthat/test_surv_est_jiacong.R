@@ -12,7 +12,7 @@ head(long_data)
 
 id_var = "id"
 time = "time"
-LM_fixedEffect_variables = c("Age","Sex","SNP","time") # Note: we need to make this consistent with the input as the long_est function
+LM_fixedEffect_variables = c("Age","Sex","SNP") # Note: we need to make this consistent with the input as the long_est function
 LM_randomEffect_variables = c("SNP")
 SM_timeVarying_variables = c("Y")
 SM_timeInvariant_variables = c("Age","Sex","SNP")
@@ -84,7 +84,15 @@ fit_VAImputation_Cox = surv_est(surv_data = surv_data,
          imp_time_factor = imp_time_factor)
 fit_VAImputation_Cox
 
+# check if the results are the same names for the alpha_hat
+fit_cox
+fit_JMLD
+fit_VA_JMLD
+fit_Imputation_Cox
+fit_VAImputation_Cox
 
+
+#####################################
 ### change the column names of the dataset and run the code again
 surv_data1 = surv_data
 colnames(surv_data1) = c("id","year","gender","mark","D","d")
@@ -111,3 +119,62 @@ fit_cox = surv_est(surv_data = surv_data1,
          SM_timeInvariant_variables = SM_timeInvariant_variables,
          imp_time_factor = imp_time_factor)
 fit_cox
+
+# run the JMLD model
+fit_JMLD = surv_est(surv_data = surv_data1,
+         long_data = long_data1,
+         method = "JMLD",
+         id_var = id_var,
+         time = time,
+         LM_fixedEffect_variables = LM_fixedEffect_variables,
+         LM_randomEffect_variables = LM_randomEffect_variables,
+         SM_timeVarying_variables = SM_timeVarying_variables,
+         SM_timeInvariant_variables = SM_timeInvariant_variables,
+         imp_time_factor = imp_time_factor)
+fit_JMLD
+
+# run the VA_JMLD model
+fit_VA_JMLD = surv_est(surv_data = surv_data1,
+         long_data = long_data1,
+         method = "VA_JMLD",
+         id_var = id_var,
+         time = time,
+         LM_fixedEffect_variables = LM_fixedEffect_variables,
+         LM_randomEffect_variables = LM_randomEffect_variables,
+         SM_timeVarying_variables = SM_timeVarying_variables,
+         SM_timeInvariant_variables = SM_timeInvariant_variables,
+         imp_time_factor = imp_time_factor)
+fit_VA_JMLD
+
+# run the Imputation_Cox model
+fit_Imputation_Cox = surv_est(surv_data = surv_data1,
+         long_data = long_data1,
+         method = "Imputation_Cox",
+         id_var = id_var,
+         time = time,
+         LM_fixedEffect_variables = LM_fixedEffect_variables,
+         LM_randomEffect_variables = LM_randomEffect_variables,
+         SM_timeVarying_variables = SM_timeVarying_variables,
+         SM_timeInvariant_variables = SM_timeInvariant_variables,
+         imp_time_factor = imp_time_factor)
+fit_Imputation_Cox
+
+# run the VAImputation_Cox model
+fit_VAImputation_Cox = surv_est(surv_data = surv_data1,
+         long_data = long_data1,
+         method = "VAImputation_Cox",
+         id_var = id_var,
+         time = time,
+         LM_fixedEffect_variables = LM_fixedEffect_variables,
+         LM_randomEffect_variables = LM_randomEffect_variables,
+         SM_timeVarying_variables = SM_timeVarying_variables,
+         SM_timeInvariant_variables = SM_timeInvariant_variables,
+         imp_time_factor = imp_time_factor)
+fit_VAImputation_Cox
+
+# check if the results are the same names for the alpha_hat
+fit_cox
+fit_JMLD
+fit_VA_JMLD
+fit_Imputation_Cox
+fit_VAImputation_Cox

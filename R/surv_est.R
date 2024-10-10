@@ -9,9 +9,11 @@
 #' - "VA_JMLD": Joint modeling the longitudinal and disease diagnosis processes with an adjustment for the historical number of visits in the longitudinal model.
 #' - "Imputation_Cox": Cox proportional hazard model with time-varying covariates after imputation.
 #' - "VAImputation_Cox": Cox proportional hazard model with time-varying covariates after imputation with an adjustment for the historical number of visits in the longitudinal model.
-#' @param id_var: Variable name for the subject ID to indicate the grouping structure.
-#' @param time: Variable name for the observational time.
-#' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model.
+#' @param id_var: Variable for the subject ID to indicate the grouping structure should be named as 'id'. # Note: if we have time, we should generalize it.
+#' @param time: Variable for the observational time should be named as 'time'. # Note: if we have time, we should generalize it.
+#' @param survTime: Variable for the survival time should be named as 'D'. # Note: if we have time, we should generalize it.
+#' @param survEvent: Variable for the survival event should be named as 'd'. # Note: if we have time, we should generalize it.
+#' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain time.
 #' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model.
 #' @param SM_timeVarying_variables: Vector input of variable names for time-varying variables in the survival model.
 #' @param SM_timeInvariant_variables: Vector input of variable names for time-invariant variables in the survival model.
@@ -48,7 +50,6 @@ surv_est <- function(long_data,
     stopifnot("`SM_timeVarying_variables` must be provided." = !is.null(SM_timeVarying_variables))
     stopifnot("`SM_timeInvariant_variables` must be provided." = !is.null(SM_timeInvariant_variables))
 
-
     long_data2 <- long_data %>%
       dplyr::group_by(id) %>%
       dplyr::mutate(time0 = ifelse(is.na(dplyr::lag(time)), 0, dplyr::lag(time))) %>%
@@ -64,7 +65,8 @@ surv_est <- function(long_data,
     alpha.hat <- summary(model)$coef[, 1]
 
     names(alpha.hat)[which(names(alpha.hat) == "Y")] <- SM_timeVarying_variables
-    return(alpha.hat)
+
+    return(list(alpha_hat = alpha.hat))
 
   } else if (method == "JMLD") {
     # Check Inputs
@@ -107,6 +109,10 @@ surv_est <- function(long_data,
 
     surv_proc <- unlist(coef(jointFit)) # change the name of the output to alpha
     long_proc <- unlist(nlme::fixef(jointFit))
+
+    names(long_proc) <- gsub("Y.", "", names(long_proc))
+    names(surv_proc) <- gsub("gammas.", "", names(surv_proc))
+    names(surv_proc)[length(names(surv_proc))] <- SM_timeVarying_variables
 
     results <- list(
       beta_hat = long_proc, # beta_hat
@@ -164,6 +170,9 @@ surv_est <- function(long_data,
 
     surv_proc <- unlist(coef(jointFit))
     long_proc <- unlist(nlme::fixef(jointFit))
+    names(long_proc) <- gsub("Y.", "", names(long_proc))
+    names(surv_proc) <- gsub("gammas.", "", names(surv_proc))
+    names(surv_proc)[length(names(surv_proc))] <- SM_timeVarying_variables
 
     results <- list(
       beta_hat = long_proc, # beta_hat
@@ -259,9 +268,10 @@ surv_est <- function(long_data,
     fit <- lapply(1:5, function(i) coxph_imp(mice::complete(imp1, action = i)))
     alpha.hat <- sapply(seq_along(fit[[1]]), function(i) mean(sapply(fit, `[`, i)))
     names(alpha.hat) <- names(fit[[1]])
-
     names(alpha.hat)[which(names(alpha.hat) == "Y")] <- SM_timeVarying_variables
-    return(alpha.hat)
+
+    return(list(alpha_hat = alpha.hat))
+
   } else if (method == "VAImputation_Cox") {
     # Check Inputs
     stopifnot("`LM_fixedEffect_variables` must be provided." = !is.null(LM_fixedEffect_variables))
@@ -312,9 +322,7 @@ surv_est <- function(long_data,
     df_full <- data3
     df_full$Ni <- NA
     for (i in 1:nrow(df_full)) {
-      id <- df_full$id[i]
-      time <- df_full$time[i]
-      df_full$Ni[i] <- sum(!is.na(df_full$Y[df_full$id == id & df_full$time <= time]))
+      df_full$Ni[i] <- sum(!is.na(df_full$Y[df_full$id == df_full$id[i] & df_full$time <= df_full$time[i]]))
     }
     df_full <- df_full %>%
       as.data.frame() %>%
@@ -340,20 +348,6 @@ surv_est <- function(long_data,
                        predictorMatrix = predM1, method = impM1, maxit = 5
     )
 
-    # # cox-ph model
-    # long_data_imp = mice::complete(imp1)
-    # long_data_imp2 = long_data_imp %>%
-    #   dplyr::group_by(id) %>%
-    #   dplyr::mutate(time0 = ifelse(is.na(dplyr::lag(time)),0,dplyr::lag(time) ))
-    # long_data_imp2$d0 = surv_data$d[match(long_data_imp2$id,surv_data$id)]
-    # long_data_imp2 = na.omit(long_data_imp2) %>%
-    #             dplyr::group_by(id) %>%
-    #             dplyr::mutate(d=ifelse(time<max(time,na.rm = TRUE),0,d0))
-
-    # model_formula = as.formula(paste("Surv(time0, time, d) ~ ",paste(SM_variables,collapse="+")))
-    # model = survival::coxph(model_formula, data = long_data_imp2)
-    # (alpha.hat = summary(model)$coef[,1])
-
     # fit the cox-ph model
     coxph_imp <- function(data_imp) {
       # cox-ph model
@@ -369,11 +363,14 @@ surv_est <- function(long_data,
       model <- survival::coxph(model_formula, data = long_data_imp2)
       (alpha.hat <- summary(model)$coef[, 1])
     }
+
     fit <- lapply(1:5, function(i) coxph_imp(mice::complete(imp1, action = i)))
     alpha.hat <- sapply(seq_along(fit[[1]]), function(i) mean(sapply(fit, `[`, i)))
     names(alpha.hat) <- names(fit[[1]])
-
     names(alpha.hat)[which(names(alpha.hat) == "Y")] <- SM_timeVarying_variables
-    return(alpha.hat)
+
+    return(list(alpha_hat = alpha.hat))
   }
 }
+
+

@@ -9,15 +9,15 @@
 #' - "IIRR_weighting": Inverse-intensity-rate-ratio weighting approach.
 #' - "JMVL_Liang": Joint model of the visiting process and the longitudinal process with dependent latent variables.
 #' - "imputation_LME": Imputation-based approach with linear mixed-effect model.
-#' - "JMVL_G": Joint model of the visiting process and the longitudinal process with shared random intercept.
-#' @param id_var: Variable name for the subject ID to indicate the grouping structure.
-#' @param time: Variable name for the observational time.
+#' - "JMVL_G": Joint model of the visiting process and the longitudinal process with a shared random intercept.
+#' @param id_var: Variable for the subject ID to indicate the grouping structure should be named as 'id'. # Note: if we have time, we should generalize it.
+#' @param time: Variable for the observational time should be named as 'time'. # Note: if we have time, we should generalize it.
 #' @param outcome_var: Variable name for the longitudinal outcome variable.
 #' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain time.
 #' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model. This argument is NULL for methods including, JMVL_LY, JMVL_G and IIRR_weighting.
 #' @param VPM_variables: Vector input of variable names in the visiting process model.
 #' @param imp_time_factor: scale factor for the time variable. This argument is only needed in the imputation-based methods, e.g., Imputation_Cox and VAImputation_Cox. The default is NULL (no scale).
-#' @param optCtrl: control parameters for runing the mixed-effect model. See "control" argument in the lme4::lmer (https://cran.r-project.org/web/packages/lme4/index.html).
+#' @param optCtrl: control parameters for running the mixed-effect model. See "control" argument in the lme4::lmer (https://cran.r-project.org/web/packages/lme4/index.html).
 #' @param control: control parameters for the JMVL_G method, including: (1) verbose: TRUE or FALSE for outputting checkpoint after each iteration. Default is FALSE. (2) tol: tolerance for convergence (3) GHk: number of gaussian-hermite quadrature points. Default is 10. (5) maxiter: maximum number of iteration. Default is 150.
 #' @param ... Additional arguments to `nleqslv::nleqslv()`
 #'
@@ -159,15 +159,15 @@ long_est <- function(long_data,
 
       gamma <- rep(0, ncol(V))
       gamma.solve <- nleqslv::nleqslv(x = gamma, fn = gamma_function, ..., control = list(trace = 0))
-      (gamma.hat <- gamma.solve$x)
+      (gamma_hat <- gamma.solve$x)
 
-      return(gamma.hat)
+      return(gamma_hat)
     }
 
-    (gamma.hat <- gamma.est.fun(V, VV))
-    names(gamma.hat) <- colnames(V)
+    (gamma_hat <- gamma.est.fun(V, VV))
+    names(gamma_hat) <- colnames(V)
 
-    exp.gamma <- as.vector(exp(VV %*% gamma.hat))
+    exp.gamma <- as.vector(exp(VV %*% gamma_hat))
     y.data <- data.frame(id, Time, y)
     y.star.fun <- function(t) {
       y.data1 <- y.data %>%
@@ -212,7 +212,7 @@ long_est <- function(long_data,
     names(beta_hat_LY) <- colnames(X)
 
     results <- list(
-      gamma.hat = gamma.hat,
+      gamma_hat = gamma_hat,
       beta_hat = beta_hat_LY
     )
 
@@ -267,17 +267,17 @@ long_est <- function(long_data,
 
       gamma <- rep(0, ncol(V))
       gamma.solve <- nleqslv::nleqslv(x = gamma, fn = gamma_function, ..., control = list(trace = 0))
-      (gamma.hat <- gamma.solve$x)
+      (gamma_hat <- gamma.solve$x)
 
-      return(gamma.hat)
+      return(gamma_hat)
     }
 
-    (gamma.hat <- gamma.est.fun(V, VV))
-    names(gamma.hat) <- colnames(V)
+    (gamma_hat <- gamma.est.fun(V, VV))
+    names(gamma_hat) <- colnames(V)
 
     ###### weightedGEE with the intercept and time ######
     print("Estimating parameters in the LP model...")
-    weights <- as.vector(exp(V %*% gamma.hat))
+    weights <- as.vector(exp(V %*% gamma_hat))
     X.GEE <- as.matrix(data[, c(LM_fixedEffect_withTime_variables)])
     X.GEE <- cbind(1, X.GEE)
     Y.function <- function(beta) {
@@ -291,9 +291,10 @@ long_est <- function(long_data,
     beta_hat_weightedGEE.solve <- nleqslv::nleqslv(x = beta, fn = Y.function, ..., control = list(trace = 0))
     (beta_hat_weightedGEE <- beta_hat_weightedGEE.solve$x)
     names(beta_hat_weightedGEE) <- colnames(X.GEE)
+    names(beta_hat_weightedGEE)[1] <- "(intercept)"
 
     results <- list(
-      gamma.hat = gamma.hat,
+      gamma_hat = gamma_hat,
       beta_hat = beta_hat_weightedGEE
     )
 
@@ -350,16 +351,16 @@ long_est <- function(long_data,
 
       gamma <- rep(0.1, ncol(V))
       gamma.solve <- nleqslv::nleqslv(x = gamma, fn = gamma_function, ..., control = list(trace = 0))
-      (gamma.hat <- gamma.solve$x)
+      (gamma_hat <- gamma.solve$x)
 
-      return(gamma.hat)
+      return(gamma_hat)
     }
 
-    (gamma.hat <- gamma.est.fun(V, VV))
-    names(gamma.hat) <- colnames(V)
+    (gamma_hat <- gamma.est.fun(V, VV))
+    names(gamma_hat) <- colnames(V)
 
     # Lambda_estimation
-    exp_gamma <- as.vector(exp(VV %*% gamma.hat))
+    exp_gamma <- as.vector(exp(VV %*% gamma_hat))
     denom_Lambda <- rep(sum(exp_gamma), length(Time.unique))
     Time_freqtable <- table(Time)
     Time_freqtable1 <- Time_freqtable[match(as.character(Time.unique), names(Time_freqtable))]
@@ -441,8 +442,8 @@ long_est <- function(long_data,
     (beta.hat)
 
     results <- list(
-      gamma.hat = gamma.hat,
-      beta_hat = beta_hat
+      gamma_hat = gamma_hat,
+      beta_hat = beta.hat
     )
 
     return(results)
@@ -881,6 +882,9 @@ long_est <- function(long_data,
       stop("\n\nnot converged! Increase maxiter. \n")
     }
 
+    names(betas) <- colnames(X)
+    names(betas)[1] <- "(intercept)"
+    
     check_points <- list(
       Y_mat = Y_mat,
       S_mat = S_mat,
@@ -888,9 +892,8 @@ long_est <- function(long_data,
       Rho_mat = Rho_mat
     )
     estimates <- list(
-      betas = betas,
+      gamma_hat = gammas,
       sigma2_e = sigma2_e,
-      gammas = gammas,
       sigma2_b = sigma2_b,
       rho = rho
     )
