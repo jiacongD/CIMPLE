@@ -22,6 +22,14 @@
 #' @param ... Additional arguments to `nleqslv::nleqslv()`
 #'
 #' @return
+#' beta_hat: Estimated coefficients in the longitudinal model.
+#' Other output in each method:
+#' - standard_LME: beta_sd: Standard deviation of the estimated coefficients.
+#' - VA_LME: beta_sd: Standard deviation of the estimated coefficients.
+#' - JMVL_LY: gamma_hat: Estimated coefficients in the visiting process model. 
+#' - IIRR_weighting: gamma_hat: Estimated coefficients in the visiting process model.
+#' - JMVL_Liang: gamma_hat: Estimated coefficients in the visiting process model.
+#' - JMVL_G: 
 #' @export
 #'
 #' @examples

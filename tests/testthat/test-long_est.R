@@ -83,7 +83,6 @@ test_that("The `JMVL_LY` method in long_est() works", {
   )
 })
 
-
 # IIRR_weighting
 test_that("The `IIRR_weighting` method in long_est() works", {
   # Set arguments
@@ -112,7 +111,6 @@ test_that("The `IIRR_weighting` method in long_est() works", {
   )
 })
 
-
 # JMVL_G
 test_that("The `JMVL_G` method in long_est() works", {
   # Set arguments
@@ -140,7 +138,6 @@ test_that("The `JMVL_G` method in long_est() works", {
     )
   )
 })
-
 
 # JMVL_Liang
 test_that("The `JMVL_Liang` method in long_est() works", {

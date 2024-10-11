@@ -1,5 +1,13 @@
 rm(list=ls())
 
+# Jiacong: 
+# 1. generalize the input arguments for the function long_est and surv_est
+# 2. write the return arguments for the documentation.
+# Howard:
+# 1. format the return argument. 
+# 2. write the example codes for the function long_est and surv_est.
+# 3. put the references in the documentation.
+
 library(dplyr)
 library(mice)
 library(survival)
@@ -125,10 +133,10 @@ fit_imputation_LME
 ############# change the column names of the dataset and run the code again
 head(train_data)
 train_data1 <- train_data
-colnames(train_data1) <- c("id","trt","age","time","outcome") # change the column names
+colnames(train_data1) <- c("patientID","trt","age","time","outcome") # change the column names
 
 time_var = "time"
-id_var = "id"
+id_var = "patientID"
 outcome_var = "outcome"
 VPM_variables = c("trt", "age")
 LM_fixedEffect_variables = c("trt", "age")
