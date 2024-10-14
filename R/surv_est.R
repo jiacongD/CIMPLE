@@ -9,10 +9,10 @@
 #' - "VA_JMLD": Joint modeling the longitudinal and disease diagnosis processes with an adjustment for the historical number of visits in the longitudinal model.
 #' - "Imputation_Cox": Cox proportional hazard model with time-varying covariates after imputation.
 #' - "VAImputation_Cox": Cox proportional hazard model with time-varying covariates after imputation with an adjustment for the historical number of visits in the longitudinal model.
-#' @param id_var: Variable for the subject ID to indicate the grouping structure should be named as 'id'. # Note: if we have time, we should generalize it.
-#' @param time: Variable for the observational time should be named as 'time'. # Note: if we have time, we should generalize it.
-#' @param survTime: Variable for the survival time should be named as 'D'. # Note: if we have time, we should generalize it.
-#' @param survEvent: Variable for the survival event should be named as 'd'. # Note: if we have time, we should generalize it.
+#' @param id_var: Variable for the subject ID to indicate the grouping structure. 
+#' @param time: Variable for the observational time. 
+#' @param survTime: Variable for the survival time.
+#' @param survEvent: Variable for the survival event.
 #' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain time.
 #' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model.
 #' @param SM_timeVarying_variables: Vector input of variable names for time-varying variables in the survival model.
@@ -20,6 +20,10 @@
 #' @param imp_time_factor: scale factor for the time variable. This argument is only needed in the imputation-based methods, e.g., Imputation_Cox and VAImputation_Cox. The default is NULL (no scale).
 #'
 #' @return
+#' alpha_hat: Estimated coefficients for the survival model.
+#' Other output in each method:
+#' - JMLD: beta_hat: Estimated coefficients for the longitudinal model.
+#' - VA_JMLD: beta_hat: Estimated coefficients for the longitudinal model.
 #' @export
 #'
 #' @examples
@@ -30,16 +34,22 @@ surv_est <- function(long_data,
                      method,
                      id_var,
                      time = NULL,
+                     survTime = NULL,
+                     survEvent = NULL,
                      LM_fixedEffect_variables = NULL,
                      LM_randomEffect_variables = NULL,
                      SM_timeVarying_variables = NULL,
                      SM_timeInvariant_variables = NULL,
                      imp_time_factor = NULL) {
+
   colnames(long_data)[which(colnames(long_data) == id_var)] <- "id"
   colnames(long_data)[which(colnames(long_data) == SM_timeVarying_variables)] <- "Y"
   colnames(long_data)[which(colnames(long_data) == time)] <- "time"
+  colnames(surv_data)[which(colnames(surv_data) == id_var)] <- "id"
+  colnames(surv_data)[which(colnames(surv_data) == survTime)] <- "D"
+  colnames(surv_data)[which(colnames(surv_data) == survEvent)] <- "d"
 
-  LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, time)
+  LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, "time")
   SM_variables <- c("Y", SM_timeInvariant_variables)
 
   if (method == "cox") {
@@ -102,8 +112,8 @@ surv_est <- function(long_data,
     coxFit <- survival::coxph(coxFit_formula, data = surv_data, x = TRUE)
     # summary(coxFit)
 
-    # jointFit = JMbayes2::jm(coxFit,lmeFit,time_var="time", n_chains=1L,n_iter=11000L,n_burnin=1000L)
-    jointFit <- JMbayes2::jm(coxFit, lmeFit, time_var = "time", n_chains = 1L)
+    jointFit = JMbayes2::jm(coxFit,lmeFit,time_var="time", n_chains=1L,n_iter=2000L,n_burnin=500L)
+    # jointFit <- JMbayes2::jm(coxFit, lmeFit, time_var = "time", n_chains = 1L)
 
     # print(summary(jointFit))
 
@@ -111,6 +121,7 @@ surv_est <- function(long_data,
     long_proc <- unlist(nlme::fixef(jointFit))
 
     names(long_proc) <- gsub("Y.", "", names(long_proc))
+    names(long_proc)[which(names(long_proc) == "time")] <- time
     names(surv_proc) <- gsub("gammas.", "", names(surv_proc))
     names(surv_proc)[length(names(surv_proc))] <- SM_timeVarying_variables
 
@@ -137,9 +148,7 @@ surv_est <- function(long_data,
     # add Ni(t) as a predictor
     long_data$Ni <- NA
     for (i in 1:nrow(long_data)) {
-      id <- long_data$id[i]
-      time <- long_data$time[i]
-      long_data$Ni[i] <- sum(!is.na(long_data$Y[long_data$id == id & long_data$time <= time]))
+      long_data$Ni[i] <- sum(!is.na(long_data$Y[long_data$id == long_data$id[i] & long_data$time <= long_data$time[i]]))
     }
 
     # longitudinal submodel, try nlminb optimizer first, if there is an error, then use optim optimizer
@@ -156,21 +165,19 @@ surv_est <- function(long_data,
         lmeFit <- nlme::lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_nlminb)
       }
     )
-    print(lmeFit)
 
     # survival submodel
     coxFit_formula <- as.formula(paste("survival::Surv(D, d) ~ ", paste(SM_timeInvariant_variables, collapse = "+")))
     coxFit <- survival::coxph(coxFit_formula, data = surv_data, x = TRUE)
     summary(coxFit)
 
-    # jointFit = JMbayes2::jm(coxFit,lmeFit,time_var="time", n_chains=1L,n_iter=11000L,n_burnin=1000L)
-    jointFit <- JMbayes2::jm(coxFit, lmeFit, time_var = "time", n_chains = 1L)
-
-    print(summary(jointFit))
+    jointFit = JMbayes2::jm(coxFit,lmeFit,time_var="time", n_chains=1L,n_iter=2000L,n_burnin=500L)
+    # jointFit <- JMbayes2::jm(coxFit, lmeFit, time_var = "time", n_chains = 1L)
 
     surv_proc <- unlist(coef(jointFit))
     long_proc <- unlist(nlme::fixef(jointFit))
     names(long_proc) <- gsub("Y.", "", names(long_proc))
+    names(long_proc)[which(names(long_proc) == "time")] <- time
     names(surv_proc) <- gsub("gammas.", "", names(surv_proc))
     names(surv_proc)[length(names(surv_proc))] <- SM_timeVarying_variables
 
