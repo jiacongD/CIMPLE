@@ -20,6 +20,8 @@ pak::pak("jiacongD/CIMPLE")
 
 ## Example
 
+TODO
+
 ``` r
 # library(CIMPLE)
 ## basic example code
