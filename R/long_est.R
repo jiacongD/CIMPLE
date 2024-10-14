@@ -10,13 +10,13 @@
 #' - "JMVL_Liang": Joint model of the visiting process and the longitudinal process with dependent latent variables.
 #' - "imputation_LME": Imputation-based approach with linear mixed-effect model.
 #' - "JMVL_G": Joint model of the visiting process and the longitudinal process with a shared random intercept.
-#' @param id_var: Variable for the subject ID to indicate the grouping structure should be named as 'id'. # Note: if we have time, we should generalize it.
-#' @param time: Variable for the observational time should be named as 'time'. # Note: if we have time, we should generalize it.
+#' @param id_var: Variable for the subject ID to indicate the grouping structure.
+#' @param time: Variable for the observational time should be named as 'time'. 
 #' @param outcome_var: Variable name for the longitudinal outcome variable.
-#' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain time.
+#' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain `time` (Note: is the correct?).
 #' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model. This argument is NULL for methods including, JMVL_LY, JMVL_G and IIRR_weighting.
 #' @param VPM_variables: Vector input of variable names in the visiting process model.
-#' @param imp_time_factor: scale factor for the time variable. This argument is only needed in the imputation-based methods, e.g., Imputation_Cox and VAImputation_Cox. The default is NULL (no scale).
+#' @param imp_time_factor: scale factor for the time variable. This argument is only needed in the imputation-based methods. 
 #' @param optCtrl: control parameters for running the mixed-effect model. See "control" argument in the lme4::lmer (https://cran.r-project.org/web/packages/lme4/index.html).
 #' @param control: control parameters for the JMVL_G method, including: (1) verbose: TRUE or FALSE for outputting checkpoint after each iteration. Default is FALSE. (2) tol: tolerance for convergence (3) GHk: number of gaussian-hermite quadrature points. Default is 10. (5) maxiter: maximum number of iteration. Default is 150.
 #' @param ... Additional arguments to `nleqslv::nleqslv()`
@@ -29,7 +29,6 @@
 #' - JMVL_LY: gamma_hat: Estimated coefficients in the visiting process model. 
 #' - IIRR_weighting: gamma_hat: Estimated coefficients in the visiting process model.
 #' - JMVL_Liang: gamma_hat: Estimated coefficients in the visiting process model.
-#' - JMVL_G: 
 #' @export
 #'
 #' @examples
@@ -49,12 +48,12 @@ long_est <- function(long_data,
                                     GHk = 10,
                                     maxiter = 150)) {
 
-  stopifnot("Variable name for the observational time (`time`) must be named as 'time'."  != (time=="time"))
+  # stopifnot("Variable name for the observational time (`time`) must be named as 'time'."  != (time=="time"))
 
   colnames(long_data)[which(colnames(long_data) == id_var)] <- "id"
   colnames(long_data)[which(colnames(long_data) == outcome_var)] <- "Y"
   colnames(long_data)[which(colnames(long_data) == time)] <- "time"
-  LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, time)
+  LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, "time")
 
   if (method == "standard_LME") {
     # Check Inputs
@@ -76,12 +75,15 @@ long_est <- function(long_data,
                             control = lme4::lmerControl(optCtrl = control_params)
     )
     # Print beta_hat
-    (beta_hat <- summary(lme_model)$coef[, 1])
+    beta_hat <- summary(lme_model)$coef[, 1]
+    beta_sd <- summary(lme_model)$coef[, 2]
+    names(beta_hat)[which(names(beta_hat) == "time")] <- time
+    names(beta_sd)[which(names(beta_sd) == "time")] <- time
 
     # Include beta_hat and beta_sd in a result list
     result <- list(
       beta_hat = beta_hat,
-      beta_sd = summary(lme_model)$coef[, 2]
+      beta_sd = beta_sd
     )
 
     return(result)
@@ -109,12 +111,15 @@ long_est <- function(long_data,
                             control = lme4::lmerControl(optCtrl = control_params)
     )
     # Print beta_hat
-    (beta_hat <- summary(lme_model)$coef[, 1])
+    beta_hat <- summary(lme_model)$coef[, 1]
+    beta_sd <- summary(lme_model)$coef[, 2]
+    names(beta_hat)[which(names(beta_hat) == "time")] <- time
+    names(beta_sd)[which(names(beta_sd) == "time")] <- time
 
     # Include beta_hat and beta_sd in a result list
     result <- list(
       beta_hat = beta_hat,
-      beta_sd = summary(lme_model)$coef[, 2]
+      beta_sd = beta_sd
     )
 
     return(result)
@@ -280,7 +285,7 @@ long_est <- function(long_data,
       return(gamma_hat)
     }
 
-    (gamma_hat <- gamma.est.fun(V, VV))
+    gamma_hat <- gamma.est.fun(V, VV)
     names(gamma_hat) <- colnames(V)
 
     ###### weightedGEE with the intercept and time ######
@@ -300,6 +305,7 @@ long_est <- function(long_data,
     (beta_hat_weightedGEE <- beta_hat_weightedGEE.solve$x)
     names(beta_hat_weightedGEE) <- colnames(X.GEE)
     names(beta_hat_weightedGEE)[1] <- "(intercept)"
+    names(beta_hat_weightedGEE)[which(names(beta_hat_weightedGEE)=="time")] <- time_var
 
     results <- list(
       gamma_hat = gamma_hat,
@@ -532,8 +538,10 @@ long_est <- function(long_data,
     fit <- lapply(1:5, function(i) lme_imp(complete(imp1, action = i)))
     beta_hat <- sapply(seq_along(fit[[1]]), function(i) mean(sapply(fit, `[`, i)))
     names(beta_hat) <- names(fit[[1]])
+    names(beta_hat)[which(names(beta_hat) == "time")] <- time
 
     results <- list(beta_hat = beta_hat)
+
     return(results)
   } else if (method == "JMVL_G") {
     # Check Inputs
@@ -892,6 +900,7 @@ long_est <- function(long_data,
 
     names(betas) <- colnames(X)
     names(betas)[1] <- "(intercept)"
+    names(betas)[which(names(betas) == "time")] <- time_var
     
     check_points <- list(
       Y_mat = Y_mat,
@@ -905,7 +914,7 @@ long_est <- function(long_data,
       sigma2_b = sigma2_b,
       rho = rho
     )
-    results <- list(beta_hat = betas, estimates = estimates, check_points = check_points)
+    results <- list(beta_hat = betas)
     return(results)
   }
 }

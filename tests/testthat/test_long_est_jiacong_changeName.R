@@ -1,35 +1,28 @@
-rm(list=ls())
-
-# Jiacong: 
-# 1. generalize the input arguments for the function long_est and surv_est
-# 2. write the return arguments for the documentation.
-# Howard:
-# 1. format the return argument. 
-# 2. write the example codes for the function long_est and surv_est.
-# 3. put the references in the documentation.
-
+############# change the column names of the dataset and run the code again
 library(dplyr)
 library(mice)
 library(survival)
 
 load("/Users/jiacong/Google Drive/Umich/research/longitudinalEHR/git/CIMPLE/data/train_data.rda")
+head(train_data)
 
-time_var <- "time"
-id_var <- "id"
-outcome_var <- "Y"
-VPM_variables <- c("Z", "X")
-LM_fixedEffect_variables <- c("Z", "X")
-LM_randomEffect_variables <- "Z"
+train_data1 <- train_data
+colnames(train_data1) <- c("patientID","trt","age","obsTime","outcome") # change the column names
 
-set.seed(2024)
+time_var = "obsTime"
+id_var = "patientID"
+outcome_var = "outcome"
+VPM_variables = c("trt", "age")
+LM_fixedEffect_variables = c("trt", "age")
+LM_randomEffect_variables = "trt"
 
-# Fit the standard LME model
-beta_hat_standardLME = long_est(long_data=train_data,
+# run the standard LME model
+fit_standardLME = long_est(long_data=train_data1,
                      method="standard_LME",
-                     id_var="id",
+                     id_var=id_var,
                      outcome_var=outcome_var,
                      LM_fixedEffect_variables = LM_fixedEffect_variables,
-                     time = "time",
+                     time = time_var,
                      LM_randomEffect_variables = LM_randomEffect_variables,
                      VPM_variables = VPM_variables,
                      optCtrl = list(method = "nlminb", kkt = FALSE, tol = 0.2, maxit = 20000),
@@ -37,10 +30,10 @@ beta_hat_standardLME = long_est(long_data=train_data,
                                     tol = 1e-3,
                                     GHk = 10,
                                     maxiter = 150))
-beta_hat_standardLME$beta_hat
+fit_standardLME
 
-# Fit the standard LME model with the default optimizer
-beta_hat_VALME = long_est(long_data=train_data,
+# run the VA_LME model
+fit_VALME = long_est(long_data=train_data1,
                      method="VA_LME",
                      id_var=id_var,
                      outcome_var=outcome_var,
@@ -52,10 +45,10 @@ beta_hat_VALME = long_est(long_data=train_data,
                                     tol = 1e-3,
                                     GHk = 10,
                                     maxiter = 150))
-beta_hat_VALME$beta_hat
+fit_VALME
 
-# JMVL_LY
-fit_JMVL_LY = long_est(long_data=train_data,
+# run the JMVL_LY model
+fit_JMVL_LY = long_est(long_data=train_data1,
                      method="JMVL_LY",
                      id_var=id_var,
                      outcome_var=outcome_var,
@@ -69,8 +62,8 @@ fit_JMVL_LY = long_est(long_data=train_data,
                                     maxiter = 150))
 fit_JMVL_LY
 
-# IIRR_weighting
-fit_IIRR_weighting = long_est(long_data=train_data,
+# run the IIRR_weighting model
+fit_IIRR_weighting = long_est(long_data=train_data1,
                      method="IIRR_weighting",
                      id_var=id_var,
                      outcome_var=outcome_var,
@@ -84,8 +77,8 @@ fit_IIRR_weighting = long_est(long_data=train_data,
                                     maxiter = 150))
 fit_IIRR_weighting
 
-# JMVL_G
-fit_JMVL_G = long_est(long_data=train_data,
+# run the JMVL_G model
+fit_JMVL_G = long_est(long_data=train_data1,
                      method="JMVL_G",
                      id_var=id_var,
                      outcome_var=outcome_var,
@@ -95,12 +88,12 @@ fit_JMVL_G = long_est(long_data=train_data,
                      VPM_variables = VPM_variables,
                      control = list(verbose = TRUE,
                                     tol = 1e-3,
-                                    GHk = 20,
+                                    GHk = 10,
                                     maxiter = 150))
-fit_JMVL_G$estimates$betas
+fit_JMVL_G$beta_hat
 
-# JMVL_Liang
-fit_JMVL_Liang = long_est(long_data=train_data,
+# run the JMVL_Liang model
+fit_JMVL_Liang = long_est(long_data=train_data1,
                      method="JMVL_Liang",
                      id_var=id_var,
                      outcome_var=outcome_var,
@@ -114,8 +107,8 @@ fit_JMVL_Liang = long_est(long_data=train_data,
                                     maxiter = 150))
 fit_JMVL_Liang
 
-# imputation_LME
-fit_imputation_LME = long_est(long_data=train_data,
+# run the imputation_LME model
+fit_imputation_LME = long_est(long_data=train_data1,
                      method="imputation_LME",
                      id_var=id_var,
                      outcome_var=outcome_var,
@@ -130,6 +123,11 @@ fit_imputation_LME = long_est(long_data=train_data,
                                     maxiter = 150))
 fit_imputation_LME
 
-
-
-
+# list all the fit, check if the column names match
+fit_standardLME # done
+fit_VALME # done
+fit_JMVL_LY # no need to change
+fit_IIRR_weighting # done
+fit_JMVL_G$beta_hat # done
+fit_JMVL_Liang # no need to change
+fit_imputation_LME # done
