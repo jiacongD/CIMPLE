@@ -41,6 +41,7 @@
 #'   gaussian-hermite quadrature points. Default is 10. (5) `maxiter`: maximum
 #'   number of iteration. Default is 150.
 #' @param ... Additional arguments to [nleqslv::nleqslv()].
+#' @import dplyr
 #'
 #' @return `beta_hat`: Estimated coefficients in the longitudinal model.
 #'
@@ -675,7 +676,7 @@ long_est <- function(long_data,
     # Note that when setting dist="exponential", the link function is "log" of the expected of the survival time, not the rate.
     # therefore, I need to take the negative of the coefficients
     initial_values$gammas <- -coef(summary(vp_model))
-    print(initial_values$gammas)
+
     # input
     y <- long_data$Y
     X <- cbind(1, long_data[, c(LM_fixedEffect_withTime_variables)]) |> as.matrix()

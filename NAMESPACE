@@ -2,3 +2,4 @@
 
 export(long_est)
 export(surv_est)
+import(dplyr)
