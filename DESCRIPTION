@@ -1,9 +1,12 @@
 Package: CIMPLE
 Title: CIMPLE: Clinically Informative Missingness through Probabilities, Likelihoods, and Estimating Equations
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R: c(
     person("Jiacong", "Du", , "jiacong@umich.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-7768-9083"))
+           comment = c(ORCID = "0000-0002-7768-9083")),
+    person("Howard", "Baik", "howard.baik@yale.edu", role = "ctb",
+            comment = c(ORCID = "0009-0000-8942-1618"))
+           )
 Description: This package offers a collection of methods involved with analyzing longitudinal EHR data with possibly informative observational time. These methods are grouped into two classes depending on the inferential task. One group focuses on estimating the effect of an exposure on a longitudinal biomarker while the other group assesses the impact of a longitudinal biomarker on time-to-diagnosis outcomes. 
 License: GPL (>= 3)
 Depends: 
