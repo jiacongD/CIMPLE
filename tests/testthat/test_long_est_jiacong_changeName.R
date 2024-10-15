@@ -90,7 +90,7 @@ fit_JMVL_G = long_est(long_data=train_data1,
                                     tol = 1e-3,
                                     GHk = 10,
                                     maxiter = 150))
-fit_JMVL_G$beta_hat
+fit_JMVL_G$beta_hat # TODO: Error
 
 # run the JMVL_Liang model
 fit_JMVL_Liang = long_est(long_data=train_data1,

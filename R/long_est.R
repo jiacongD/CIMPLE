@@ -1,37 +1,98 @@
-#' long_est
+#' Coefficient estimation in the longitudinal model
+#'
+#' This function offers a collection of methods of coefficient estimation in a
+#' longitudinal model with possibly informative observation time.
+#' These methods include Standard linear mixed-effect model (Standard_LME),
+#' Linear mixed-effect model adjusted for the historical number of visits (VA_LME),
+#' Joint model of the visiting process and the longitudinal process accounting for measured confounders (JMVL_LY),
+#' Inverse-intensity-rate-ratio weighting approach (IIRR_weighting),
+#' Joint model of the visiting process and the longitudinal process with dependent latent variables (JMVL_Liang),
+#' Imputation-based approach with linear mixed-effect model (imputation_LME), and
+#' Joint model of the visiting process and the longitudinal process with a shared random intercept (JMVL_G).
 #'
 #' @param long_data Long dataset
-#' @param method
-#' Either:
-#' - "standard_LME": Standard linear mixed-effect model.
-#' - "VA_LME": Linear mixed-effect model adjusted for the historical number of visits.
-#' - "JMVL_LY": Joint model of the visiting process and the longitudinal process accounting for measured confounders.
-#' - "IIRR_weighting": Inverse-intensity-rate-ratio weighting approach.
-#' - "JMVL_Liang": Joint model of the visiting process and the longitudinal process with dependent latent variables.
-#' - "imputation_LME": Imputation-based approach with linear mixed-effect model.
-#' - "JMVL_G": Joint model of the visiting process and the longitudinal process with a shared random intercept.
-#' @param id_var: Variable for the subject ID to indicate the grouping structure.
-#' @param time: Variable for the observational time should be named as 'time'. 
+#' @param method The following methods are available:
+#' - `standard_LME`: Standard linear mixed-effect model.
+#' - `VA_LME`: Linear mixed-effect model adjusted for the historical number of visits.
+#' - `JMVL_LY`: Joint model of the visiting process and the longitudinal process accounting for measured confounders.
+#' - `IIRR_weighting`: Inverse-intensity-rate-ratio weighting approach.
+#' - `JMVL_Liang`: Joint model of the visiting process and the longitudinal process with dependent latent variables.
+#' - `imputation_LME`: Imputation-based approach with linear mixed-effect model.
+#' - `JMVL_G`: Joint model of the visiting process and the longitudinal process with a shared random intercept.
+#' @param id_var: Variable for the subject ID to indicate the grouping
+#'   structure.
+#' @param time: Variable for the observational time should be named as 'time'.
 #' @param outcome_var: Variable name for the longitudinal outcome variable.
-#' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain `time` (Note: is the correct?).
-#' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model. This argument is NULL for methods including, JMVL_LY, JMVL_G and IIRR_weighting.
-#' @param VPM_variables: Vector input of variable names in the visiting process model.
-#' @param imp_time_factor: scale factor for the time variable. This argument is only needed in the imputation-based methods. 
-#' @param optCtrl: control parameters for running the mixed-effect model. See "control" argument in the lme4::lmer (https://cran.r-project.org/web/packages/lme4/index.html).
-#' @param control: control parameters for the JMVL_G method, including: (1) verbose: TRUE or FALSE for outputting checkpoint after each iteration. Default is FALSE. (2) tol: tolerance for convergence (3) GHk: number of gaussian-hermite quadrature points. Default is 10. (5) maxiter: maximum number of iteration. Default is 150.
-#' @param ... Additional arguments to `nleqslv::nleqslv()`
+#' @param LM_fixedEffect_variables: Vector input of variable names with fixed
+#'   effects in the longitudinal model. Variables should not contain `time`
+#'   (Note: is the correct?). TODO: Note: above
+#' @param LM_randomEffect_variables: Vector input of variable names with random
+#'   effects in the longitudinal model. This argument is NULL for methods
+#'   including `JMVL_LY`, `JMVL_G` and `IIRR_weighting`.
+#' @param VPM_variables: Vector input of variable names in the visiting process
+#'   model.
+#' @param imp_time_factor: scale factor for the time variable. This argument is
+#'   only needed in the imputation-based methods.
+#' @param optCtrl: control parameters for running the mixed-effect model. See
+#'   the `control` argument in [lme4::lmer()].
+#' @param control: control parameters for the `JMVL_G` method, including: (1)
+#'   `verbose`: TRUE or FALSE for outputting checkpoint after each iteration.
+#'   Default is FALSE. (2) `tol`: tolerance for convergence (3) `GHk`: number of
+#'   gaussian-hermite quadrature points. Default is 10. (5) `maxiter`: maximum
+#'   number of iteration. Default is 150.
+#' @param ... Additional arguments to [nleqslv::nleqslv()].
 #'
-#' @return
-#' beta_hat: Estimated coefficients in the longitudinal model.
+#' @return `beta_hat`: Estimated coefficients in the longitudinal model.
+#'
 #' Other output in each method:
-#' - standard_LME: beta_sd: Standard deviation of the estimated coefficients.
-#' - VA_LME: beta_sd: Standard deviation of the estimated coefficients.
-#' - JMVL_LY: gamma_hat: Estimated coefficients in the visiting process model. 
-#' - IIRR_weighting: gamma_hat: Estimated coefficients in the visiting process model.
-#' - JMVL_Liang: gamma_hat: Estimated coefficients in the visiting process model.
+#' * `standard_LME`:
+#'     * `beta_sd`: Standard deviation of the estimated coefficients.
+#' * `VA_LME`:
+#'     * `beta_sd`: Standard deviation of the estimated coefficients.
+#' * `JMVL_LY`:
+#'    * `gamma_hat`: Estimated coefficients in the visiting process model.
+#' * `IIRR_weighting`:
+#'    * `gamma_hat`: Estimated coefficients in the visiting process model.
+#' * `JMVL_Liang`:
+#'    * `gamma_hat`: Estimated coefficients in the visiting process model.
 #' @export
 #'
+#' @references
+#'
 #' @examples
+#' # Setup arguments
+#' train_data
+#'
+#' time_var = "time"
+#' id_var = "id"
+#' outcome_var = "Y"
+#' VPM_variables = c("Z", "X")
+#' LM_fixedEffect_variables = c("Z", "X")
+#' LM_randomEffect_variables = "Z"
+#'
+#' # Run the standard LME model
+#' fit_standardLME = long_est(long_data=train_data,
+#'                            method="standard_LME",
+#'                            id_var=id_var,
+#'                            outcome_var=outcome_var,
+#'                            LM_fixedEffect_variables = LM_fixedEffect_variables,
+#'                            time = time_var,
+#'                            LM_randomEffect_variables = LM_randomEffect_variables,
+#'                            VPM_variables = VPM_variables)
+#' # Return the coefficient estimates
+#' fit_standardLME$beta_hat
+#'
+#' # Run the VA_LME model
+#' fit_VALME = long_est(long_data=train_data,
+#'                      method="VA_LME",
+#'                      id_var=id_var,
+#'                      outcome_var=outcome_var,
+#'                      LM_fixedEffect_variables = LM_fixedEffect_variables,
+#'                      time = time_var,
+#'                      LM_randomEffect_variables = LM_randomEffect_variables,
+#'                      VPM_variables = VPM_variables)
+#' # Return the coefficient estimates
+#' fit_VALME$beta_hat
 long_est <- function(long_data,
                      method,
                      ...,
@@ -519,7 +580,7 @@ long_est <- function(long_data,
     impM1["Y"] <- "2l.lmer"
 
     # multilevel imputation
-    imp1 <- mice(as.matrix(data3),
+    imp1 <- mice::mice(as.matrix(data3),
                  m = 5,
                  predictorMatrix = predM1, method = impM1, maxit = 5
     )
@@ -609,12 +670,12 @@ long_est <- function(long_data,
     initial_values$sigma2_b <- 0.5^2
     initial_values$rho <- 0
 
-    vp_model_formula <- as.formula(paste0("Surv(s, d)~", paste(VPM_variables, collapse = "+")))
+    vp_model_formula <- as.formula(paste0("survival::Surv(s, d)~", paste(VPM_variables, collapse = "+")))
     vp_model <- survival::survreg(vp_model_formula, data = vp_data, dist = "exponential")
     # Note that when setting dist="exponential", the link function is "log" of the expected of the survival time, not the rate.
     # therefore, I need to take the negative of the coefficients
     initial_values$gammas <- -coef(summary(vp_model))
-
+    print(initial_values$gammas)
     # input
     y <- long_data$Y
     X <- cbind(1, long_data[, c(LM_fixedEffect_withTime_variables)]) |> as.matrix()
@@ -901,7 +962,7 @@ long_est <- function(long_data,
     names(betas) <- colnames(X)
     names(betas)[1] <- "(intercept)"
     names(betas)[which(names(betas) == "time")] <- time_var
-    
+
     check_points <- list(
       Y_mat = Y_mat,
       S_mat = S_mat,

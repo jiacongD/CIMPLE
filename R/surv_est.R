@@ -1,34 +1,97 @@
-#' surv_est
+#' Coefficient estimation in the survival model with longitudinal measurements.
+#'
+#' This function offers a collection of methods of coefficient estimation in a
+#' survival model with a longitudinally measured predictor. These methods
+#' include Cox proportional hazard model with time-varying covariates (Cox),
+#' Joint modeling the longitudinal and disease diagnosis processes (JMLD), Joint
+#' modeling the longitudinal and disease diagnosis processes with an adjustment
+#' for the historical number of visits in the longitudinal model (VA_JMLD), Cox
+#' proportional hazard model with time-varying covariates after imputation
+#' (Imputation_Cox), Cox proportional hazard model with time-varying covariates
+#' after imputation with an adjustment for the historical number of visits in
+#' the longitudinal model (VAImputation_Cox).
 #'
 #' @param long_data Long dataset.
 #' @param surv_data Survival dataset.
-#' @param method
-#' Either:
-#' - "cox": Cox proportional hazard model with time-varying covariates.
-#' - "JMLD": Joint modeling the longitudinal and disease diagnosis processes.
-#' - "VA_JMLD": Joint modeling the longitudinal and disease diagnosis processes with an adjustment for the historical number of visits in the longitudinal model.
-#' - "Imputation_Cox": Cox proportional hazard model with time-varying covariates after imputation.
-#' - "VAImputation_Cox": Cox proportional hazard model with time-varying covariates after imputation with an adjustment for the historical number of visits in the longitudinal model.
-#' @param id_var: Variable for the subject ID to indicate the grouping structure. 
-#' @param time: Variable for the observational time. 
+#' @param method The following methods are available:
+#' - `cox`: Cox proportional hazard model with time-varying covariates.
+#' - `JMLD`: Joint modeling the longitudinal and disease diagnosis processes.
+#' - `VA_JMLD`: Joint modeling the longitudinal and disease diagnosis processes with an adjustment for the historical number of visits in the longitudinal model.
+#' - `Imputation_Cox`: Cox proportional hazard model with time-varying covariates after imputation.
+#' - `VAImputation_Cox`: Cox proportional hazard model with time-varying covariates after imputation with an adjustment for the historical number of visits in the longitudinal model.
+#' @param id_var: Variable for the subject ID to indicate the grouping
+#'   structure.
+#' @param time: Variable for the observational time.
 #' @param survTime: Variable for the survival time.
 #' @param survEvent: Variable for the survival event.
-#' @param LM_fixedEffect_variables: Vector input of variable names with fixed effects in the longitudinal model. Variables should not contain time.
-#' @param LM_randomEffect_variables: Vector input of variable names with random effects in the longitudinal model.
-#' @param SM_timeVarying_variables: Vector input of variable names for time-varying variables in the survival model.
-#' @param SM_timeInvariant_variables: Vector input of variable names for time-invariant variables in the survival model.
-#' @param imp_time_factor: scale factor for the time variable. This argument is only needed in the imputation-based methods, e.g., Imputation_Cox and VAImputation_Cox. The default is NULL (no scale).
+#' @param LM_fixedEffect_variables: Vector input of variable names with fixed
+#'   effects in the longitudinal model. Variables should not contain time.
+#' @param LM_randomEffect_variables: Vector input of variable names with random
+#'   effects in the longitudinal model.
+#' @param SM_timeVarying_variables: Vector input of variable names for
+#'   time-varying variables in the survival model.
+#' @param SM_timeInvariant_variables: Vector input of variable names for
+#'   time-invariant variables in the survival model.
+#' @param imp_time_factor: scale factor for the time variable. This argument is
+#'   only needed in the imputation-based methods, e.g., Imputation_Cox and
+#'   VAImputation_Cox. The default is NULL (no scale).
 #'
-#' @return
-#' alpha_hat: Estimated coefficients for the survival model.
-#' Other output in each method:
-#' - JMLD: beta_hat: Estimated coefficients for the longitudinal model.
-#' - VA_JMLD: beta_hat: Estimated coefficients for the longitudinal model.
+#' @return `alpha_hat`: Estimated coefficients for the survival model.
+#'
+#'   Other output in each method:
+#' * `JMLD`:
+#'     * `beta_hat`: Estimated coefficients for the longitudinal model.
+#' * `VA_JMLD`:
+#'     * `beta_hat`: Estimated coefficients for the longitudinal model.
 #' @export
 #'
+#' @references
+#'
+#'
 #' @examples
+#' # Setup arguments
 #'
+#' id_var = "id"
+#' time = "time"
+#' survTime = "D"
+#' survEvent = "d"
+#' LM_fixedEffect_variables = c("Age","Sex","SNP")
+#' LM_randomEffect_variables = c("SNP")
+#' SM_timeVarying_variables = c("Y")
+#' SM_timeInvariant_variables = c("Age","Sex","SNP")
+#' imp_time_factor = 1
 #'
+#' # Run the cox model
+#' fit_cox = surv_est(surv_data = surv_data,
+#'                    long_data = long_data,
+#'                    method = "cox",
+#'                    id_var = id_var,
+#'                    time = time,
+#'                    survTime = survTime,
+#'                    survEvent = survEvent,
+#'                    LM_fixedEffect_variables = LM_fixedEffect_variables,
+#'                    LM_randomEffect_variables = LM_randomEffect_variables,
+#'                    SM_timeVarying_variables = SM_timeVarying_variables,
+#'                    SM_timeInvariant_variables = SM_timeInvariant_variables,
+#'                    imp_time_factor = imp_time_factor)
+#' # Return the coefficient estimates
+#' fit_cox$alpha_hat
+#'
+#' # run the JMLD model
+#' fit_JMLD = surv_est(surv_data = surv_data,
+#'                     long_data = long_data,
+#'                     method = "JMLD",
+#'                     id_var = id_var,
+#'                     time = time,
+#'                     survTime = survTime,
+#'                     survEvent = survEvent,
+#'                     LM_fixedEffect_variables = LM_fixedEffect_variables,
+#'                     LM_randomEffect_variables = LM_randomEffect_variables,
+#'                     SM_timeVarying_variables = SM_timeVarying_variables,
+#'                     SM_timeInvariant_variables = SM_timeInvariant_variables,
+#'                     imp_time_factor = imp_time_factor)
+#' # Return the coefficient estimates
+#' fit_JMLD$alpha_hat
 surv_est <- function(long_data,
                      surv_data,
                      method,
