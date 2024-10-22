@@ -130,3 +130,9 @@ fit_JMLD = surv_est(surv_data = surv_data,
 # Return the coefficient estimates
 fit_JMLD$alpha_hat
 }
+\references{
+Rizopoulos, D. (2010). Jm: An r package for the joint modelling of longitudinal and time-to-event data. Journal of
+statistical software, 35:1–33.
+
+Rizopoulos, D. (2012b). Joint models for longitudinal and time-to-event data: With applications in R. CRC press.
+}

@@ -138,3 +138,17 @@ fit_VALME = long_est(long_data=train_data,
 # Return the coefficient estimates
 fit_VALME$beta_hat
 }
+\references{
+Buzkova, P. and Lumley, T. (2007). Longitudinal data analysis for generalized linear models with follow-up dependent
+on outcome-related variables. Canadian Journal of Statistics, 35(4):485–500.
+
+Gasparini, A., Abrams, K. R., Barrett, J. K., Major, R. W., Sweeting, M. J., Brunskill, N. J., and Crowther, M. J. (2020).
+Mixed-effects models for health care longitudinal data with an informative visiting process: A monte carlo simulation
+study. Statistica Neerlandica, 74(1):5–23.
+
+Liang, Y., Lu, W., and Ying, Z. (2009). Joint modeling and analysis of longitudinal data with informative observation
+times. Biometrics, 65(2):377–384.
+
+Lin, D. Y. and Ying, Z. (2001). Semiparametric and nonparametric regression analysis of longitudinal data. Journal of
+the American Statistical Association, 96(453):103–126.
+}
