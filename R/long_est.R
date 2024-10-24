@@ -2,13 +2,13 @@
 #'
 #' This function offers a collection of methods of coefficient estimation in a
 #' longitudinal model with possibly informative observation time.
-#' These methods include Standard linear mixed-effect model (Standard_LME),
-#' Linear mixed-effect model adjusted for the historical number of visits (VA_LME),
-#' Joint model of the visiting process and the longitudinal process accounting for measured confounders (JMVL_LY),
-#' Inverse-intensity-rate-ratio weighting approach (IIRR_weighting),
-#' Joint model of the visiting process and the longitudinal process with dependent latent variables (JMVL_Liang),
-#' Imputation-based approach with linear mixed-effect model (imputation_LME), and
-#' Joint model of the visiting process and the longitudinal process with a shared random intercept (JMVL_G).
+#' These methods include Standard linear mixed-effect model (`standard_LME`),
+#' Linear mixed-effect model adjusted for the historical number of visits (`VA_LME`),
+#' Joint model of the visiting process and the longitudinal process accounting for measured confounders (`JMVL_LY`),
+#' Inverse-intensity-rate-ratio weighting approach (`IIRR_weighting`),
+#' Joint model of the visiting process and the longitudinal process with dependent latent variables (`JMVL_Liang`),
+#' Imputation-based approach with linear mixed-effect model (`imputation_LME`), and
+#' Joint model of the visiting process and the longitudinal process with a shared random intercept (`JMVL_G`).
 #'
 #' @param long_data Long dataset
 #' @param method The following methods are available:
@@ -19,27 +19,29 @@
 #' - `JMVL_Liang`: Joint model of the visiting process and the longitudinal process with dependent latent variables.
 #' - `imputation_LME`: Imputation-based approach with linear mixed-effect model.
 #' - `JMVL_G`: Joint model of the visiting process and the longitudinal process with a shared random intercept.
-#' @param id_var: Variable for the subject ID to indicate the grouping
+#' @param id_var Variable for the subject ID to indicate the grouping
 #'   structure.
-#' @param time: Variable for the observational time should be named as 'time'.
-#' @param outcome_var: Variable name for the longitudinal outcome variable.
-#' @param LM_fixedEffect_variables: Vector input of variable names with fixed
+#' @param time Variable for the observational time should be named as 'time'.
+#' @param outcome_var Variable name for the longitudinal outcome variable.
+#' @param LM_fixedEffect_variables Vector input of variable names with fixed
 #'   effects in the longitudinal model. Variables should not contain `time`
 #'   (Note: is the correct?). TODO: Note: above
-#' @param LM_randomEffect_variables: Vector input of variable names with random
-#'   effects in the longitudinal model. This argument is NULL for methods
+#' @param LM_randomEffect_variables Vector input of variable names with random
+#'   effects in the longitudinal model. This argument is `NULL` for methods
 #'   including `JMVL_LY`, `JMVL_G` and `IIRR_weighting`.
-#' @param VPM_variables: Vector input of variable names in the visiting process
+#' @param VPM_variables Vector input of variable names in the visiting process
 #'   model.
-#' @param imp_time_factor: scale factor for the time variable. This argument is
+#' @param imp_time_factor Scale factor for the time variable. This argument is
 #'   only needed in the imputation-based methods.
-#' @param optCtrl: control parameters for running the mixed-effect model. See
+#' @param optCtrl Control parameters for running the mixed-effect model. See
 #'   the `control` argument in [lme4::lmer()].
-#' @param control: control parameters for the `JMVL_G` method, including: (1)
-#'   `verbose`: TRUE or FALSE for outputting checkpoint after each iteration.
-#'   Default is FALSE. (2) `tol`: tolerance for convergence (3) `GHk`: number of
-#'   gaussian-hermite quadrature points. Default is 10. (5) `maxiter`: maximum
-#'   number of iteration. Default is 150.
+#' @param control Control parameters for the `JMVL_G` method:
+#'
+#' - `verbose`: `TRUE` or `FALSE` for outputting checkpoint after each iteration. Default is `FALSE`.
+#' - `tol`: Tolerance for convergence.
+#' - `GHk`: Number of gaussian-hermite quadrature points. Default is `10`.
+#' - `maxiter`: Maximum number of iteration. Default is `150`.
+#'
 #' @param ... Additional arguments to [nleqslv::nleqslv()].
 #' @import dplyr
 #'

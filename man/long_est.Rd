@@ -35,35 +35,37 @@ long_est(
 
 \item{...}{Additional arguments to \code{\link[nleqslv:nleqslv]{nleqslv::nleqslv()}}.}
 
-\item{id_var:}{Variable for the subject ID to indicate the grouping
+\item{id_var}{Variable for the subject ID to indicate the grouping
 structure.}
 
-\item{time:}{Variable for the observational time should be named as 'time'.}
+\item{outcome_var}{Variable name for the longitudinal outcome variable.}
 
-\item{outcome_var:}{Variable name for the longitudinal outcome variable.}
-
-\item{LM_fixedEffect_variables:}{Vector input of variable names with fixed
+\item{LM_fixedEffect_variables}{Vector input of variable names with fixed
 effects in the longitudinal model. Variables should not contain \code{time}
 (Note: is the correct?). TODO: Note: above}
 
-\item{LM_randomEffect_variables:}{Vector input of variable names with random
-effects in the longitudinal model. This argument is NULL for methods
+\item{time}{Variable for the observational time should be named as 'time'.}
+
+\item{LM_randomEffect_variables}{Vector input of variable names with random
+effects in the longitudinal model. This argument is \code{NULL} for methods
 including \code{JMVL_LY}, \code{JMVL_G} and \code{IIRR_weighting}.}
 
-\item{VPM_variables:}{Vector input of variable names in the visiting process
+\item{VPM_variables}{Vector input of variable names in the visiting process
 model.}
 
-\item{imp_time_factor:}{scale factor for the time variable. This argument is
+\item{imp_time_factor}{Scale factor for the time variable. This argument is
 only needed in the imputation-based methods.}
 
-\item{optCtrl:}{control parameters for running the mixed-effect model. See
+\item{optCtrl}{Control parameters for running the mixed-effect model. See
 the \code{control} argument in \code{\link[lme4:lmer]{lme4::lmer()}}.}
 
-\item{control:}{control parameters for the \code{JMVL_G} method, including: (1)
-\code{verbose}: TRUE or FALSE for outputting checkpoint after each iteration.
-Default is FALSE. (2) \code{tol}: tolerance for convergence (3) \code{GHk}: number of
-gaussian-hermite quadrature points. Default is 10. (5) \code{maxiter}: maximum
-number of iteration. Default is 150.}
+\item{control}{Control parameters for the \code{JMVL_G} method:
+\itemize{
+\item \code{verbose}: \code{TRUE} or \code{FALSE} for outputting checkpoint after each iteration. Default is \code{FALSE}.
+\item \code{tol}: Tolerance for convergence.
+\item \code{GHk}: Number of gaussian-hermite quadrature points. Default is \code{10}.
+\item \code{maxiter}: Maximum number of iteration. Default is \code{150}.
+}}
 }
 \value{
 \code{beta_hat}: Estimated coefficients in the longitudinal model.
@@ -95,13 +97,13 @@ Other output in each method:
 \description{
 This function offers a collection of methods of coefficient estimation in a
 longitudinal model with possibly informative observation time.
-These methods include Standard linear mixed-effect model (Standard_LME),
-Linear mixed-effect model adjusted for the historical number of visits (VA_LME),
-Joint model of the visiting process and the longitudinal process accounting for measured confounders (JMVL_LY),
-Inverse-intensity-rate-ratio weighting approach (IIRR_weighting),
-Joint model of the visiting process and the longitudinal process with dependent latent variables (JMVL_Liang),
-Imputation-based approach with linear mixed-effect model (imputation_LME), and
-Joint model of the visiting process and the longitudinal process with a shared random intercept (JMVL_G).
+These methods include Standard linear mixed-effect model (\code{standard_LME}),
+Linear mixed-effect model adjusted for the historical number of visits (\code{VA_LME}),
+Joint model of the visiting process and the longitudinal process accounting for measured confounders (\code{JMVL_LY}),
+Inverse-intensity-rate-ratio weighting approach (\code{IIRR_weighting}),
+Joint model of the visiting process and the longitudinal process with dependent latent variables (\code{JMVL_Liang}),
+Imputation-based approach with linear mixed-effect model (\code{imputation_LME}), and
+Joint model of the visiting process and the longitudinal process with a shared random intercept (\code{JMVL_G}).
 }
 \examples{
 # Setup arguments

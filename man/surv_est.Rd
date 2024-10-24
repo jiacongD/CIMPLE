@@ -33,30 +33,30 @@ surv_est(
 \item \code{VAImputation_Cox}: Cox proportional hazard model with time-varying covariates after imputation with an adjustment for the historical number of visits in the longitudinal model.
 }}
 
-\item{id_var:}{Variable for the subject ID to indicate the grouping
+\item{id_var}{Variable for the subject ID to indicate the grouping
 structure.}
 
-\item{time:}{Variable for the observational time.}
+\item{time}{Variable for the observational time.}
 
-\item{survTime:}{Variable for the survival time.}
+\item{survTime}{Variable for the survival time.}
 
-\item{survEvent:}{Variable for the survival event.}
+\item{survEvent}{Variable for the survival event.}
 
-\item{LM_fixedEffect_variables:}{Vector input of variable names with fixed
+\item{LM_fixedEffect_variables}{Vector input of variable names with fixed
 effects in the longitudinal model. Variables should not contain time.}
 
-\item{LM_randomEffect_variables:}{Vector input of variable names with random
+\item{LM_randomEffect_variables}{Vector input of variable names with random
 effects in the longitudinal model.}
 
-\item{SM_timeVarying_variables:}{Vector input of variable names for
+\item{SM_timeVarying_variables}{Vector input of variable names for
 time-varying variables in the survival model.}
 
-\item{SM_timeInvariant_variables:}{Vector input of variable names for
+\item{SM_timeInvariant_variables}{Vector input of variable names for
 time-invariant variables in the survival model.}
 
-\item{imp_time_factor:}{scale factor for the time variable. This argument is
-only needed in the imputation-based methods, e.g., Imputation_Cox and
-VAImputation_Cox. The default is NULL (no scale).}
+\item{imp_time_factor}{Scale factor for the time variable. This argument is
+only needed in the imputation-based methods, e.g., \code{Imputation_Cox} and
+\code{VAImputation_Cox}. The default is \code{NULL} (no scale).}
 }
 \value{
 \code{alpha_hat}: Estimated coefficients for the survival model.
@@ -76,14 +76,14 @@ Other output in each method:
 \description{
 This function offers a collection of methods of coefficient estimation in a
 survival model with a longitudinally measured predictor. These methods
-include Cox proportional hazard model with time-varying covariates (Cox),
-Joint modeling the longitudinal and disease diagnosis processes (JMLD), Joint
+include Cox proportional hazard model with time-varying covariates (\code{cox}),
+Joint modeling the longitudinal and disease diagnosis processes (\code{JMLD}), Joint
 modeling the longitudinal and disease diagnosis processes with an adjustment
-for the historical number of visits in the longitudinal model (VA_JMLD), Cox
+for the historical number of visits in the longitudinal model (\code{VA_JMLD}), Cox
 proportional hazard model with time-varying covariates after imputation
-(Imputation_Cox), Cox proportional hazard model with time-varying covariates
+(\code{Imputation_Cox}), Cox proportional hazard model with time-varying covariates
 after imputation with an adjustment for the historical number of visits in
-the longitudinal model (VAImputation_Cox).
+the longitudinal model (\code{VAImputation_Cox}).
 }
 \examples{
 # Setup arguments

@@ -2,14 +2,14 @@
 #'
 #' This function offers a collection of methods of coefficient estimation in a
 #' survival model with a longitudinally measured predictor. These methods
-#' include Cox proportional hazard model with time-varying covariates (Cox),
-#' Joint modeling the longitudinal and disease diagnosis processes (JMLD), Joint
+#' include Cox proportional hazard model with time-varying covariates (`cox`),
+#' Joint modeling the longitudinal and disease diagnosis processes (`JMLD`), Joint
 #' modeling the longitudinal and disease diagnosis processes with an adjustment
-#' for the historical number of visits in the longitudinal model (VA_JMLD), Cox
+#' for the historical number of visits in the longitudinal model (`VA_JMLD`), Cox
 #' proportional hazard model with time-varying covariates after imputation
-#' (Imputation_Cox), Cox proportional hazard model with time-varying covariates
+#' (`Imputation_Cox`), Cox proportional hazard model with time-varying covariates
 #' after imputation with an adjustment for the historical number of visits in
-#' the longitudinal model (VAImputation_Cox).
+#' the longitudinal model (`VAImputation_Cox`).
 #'
 #' @param long_data Long dataset.
 #' @param surv_data Survival dataset.
@@ -19,22 +19,22 @@
 #' - `VA_JMLD`: Joint modeling the longitudinal and disease diagnosis processes with an adjustment for the historical number of visits in the longitudinal model.
 #' - `Imputation_Cox`: Cox proportional hazard model with time-varying covariates after imputation.
 #' - `VAImputation_Cox`: Cox proportional hazard model with time-varying covariates after imputation with an adjustment for the historical number of visits in the longitudinal model.
-#' @param id_var: Variable for the subject ID to indicate the grouping
+#' @param id_var Variable for the subject ID to indicate the grouping
 #'   structure.
-#' @param time: Variable for the observational time.
-#' @param survTime: Variable for the survival time.
-#' @param survEvent: Variable for the survival event.
-#' @param LM_fixedEffect_variables: Vector input of variable names with fixed
+#' @param time Variable for the observational time.
+#' @param survTime Variable for the survival time.
+#' @param survEvent Variable for the survival event.
+#' @param LM_fixedEffect_variables Vector input of variable names with fixed
 #'   effects in the longitudinal model. Variables should not contain time.
-#' @param LM_randomEffect_variables: Vector input of variable names with random
+#' @param LM_randomEffect_variables Vector input of variable names with random
 #'   effects in the longitudinal model.
-#' @param SM_timeVarying_variables: Vector input of variable names for
+#' @param SM_timeVarying_variables Vector input of variable names for
 #'   time-varying variables in the survival model.
-#' @param SM_timeInvariant_variables: Vector input of variable names for
+#' @param SM_timeInvariant_variables Vector input of variable names for
 #'   time-invariant variables in the survival model.
-#' @param imp_time_factor: scale factor for the time variable. This argument is
-#'   only needed in the imputation-based methods, e.g., Imputation_Cox and
-#'   VAImputation_Cox. The default is NULL (no scale).
+#' @param imp_time_factor Scale factor for the time variable. This argument is
+#'   only needed in the imputation-based methods, e.g., `Imputation_Cox` and
+#'   `VAImputation_Cox`. The default is `NULL` (no scale).
 #'
 #' @return `alpha_hat`: Estimated coefficients for the survival model.
 #'
