@@ -612,7 +612,7 @@ long_est <- function(long_data,
 
     print("Imputation finished.")
 
-    fit <- lapply(1:5, function(i) lme_imp(complete(imp1, action = i)))
+    fit <- lapply(1:5, function(i) lme_imp(mice::complete(imp1, action = i)))
     beta_hat <- sapply(seq_along(fit[[1]]), function(i) mean(sapply(fit, `[`, i)))
     names(beta_hat) <- names(fit[[1]])
     names(beta_hat)[which(names(beta_hat) == "time")] <- time
