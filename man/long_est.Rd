@@ -7,7 +7,6 @@
 long_est(
   long_data,
   method,
-  ...,
   id_var,
   outcome_var,
   LM_fixedEffect_variables = NULL,
@@ -16,11 +15,12 @@ long_est(
   VPM_variables = NULL,
   imp_time_factor = NULL,
   optCtrl = list(method = "nlminb", kkt = FALSE, tol = 0.2, maxit = 20000),
-  control = list(verbose = FALSE, tol = 0.001, GHk = 10, maxiter = 150)
+  control = list(verbose = FALSE, tol = 0.001, GHk = 10, maxiter = 150),
+  ...
 )
 }
 \arguments{
-\item{long_data}{Long dataset}
+\item{long_data}{Longitudinal dataset}
 
 \item{method}{The following methods are available:
 \itemize{
@@ -33,18 +33,15 @@ long_est(
 \item \code{JMVL_G}: Joint model of the visiting process and the longitudinal process with a shared random intercept.
 }}
 
-\item{...}{Additional arguments to \code{\link[nleqslv:nleqslv]{nleqslv::nleqslv()}}.}
-
 \item{id_var}{Variable for the subject ID to indicate the grouping
 structure.}
 
 \item{outcome_var}{Variable name for the longitudinal outcome variable.}
 
 \item{LM_fixedEffect_variables}{Vector input of variable names with fixed
-effects in the longitudinal model. Variables should not contain \code{time}
-(Note: is the correct?). TODO: Note: above}
+effects in the longitudinal model. Variables should not contain \code{time}.}
 
-\item{time}{Variable for the observational time should be named as 'time'.}
+\item{time}{Variable for the observational time.}
 
 \item{LM_randomEffect_variables}{Vector input of variable names with random
 effects in the longitudinal model. This argument is \code{NULL} for methods
@@ -54,7 +51,7 @@ including \code{JMVL_LY}, \code{JMVL_G} and \code{IIRR_weighting}.}
 model.}
 
 \item{imp_time_factor}{Scale factor for the time variable. This argument is
-only needed in the imputation-based methods.}
+only needed in the imputation-based methods i.e., \code{imputation_LME}.}
 
 \item{optCtrl}{Control parameters for running the mixed-effect model. See
 the \code{control} argument in \code{\link[lme4:lmer]{lme4::lmer()}}.}
@@ -66,6 +63,8 @@ the \code{control} argument in \code{\link[lme4:lmer]{lme4::lmer()}}.}
 \item \code{GHk}: Number of gaussian-hermite quadrature points. Default is \code{10}.
 \item \code{maxiter}: Maximum number of iteration. Default is \code{150}.
 }}
+
+\item{...}{Additional arguments to \code{\link[nleqslv:nleqslv]{nleqslv::nleqslv()}}.}
 }
 \value{
 \code{beta_hat}: Estimated coefficients in the longitudinal model.

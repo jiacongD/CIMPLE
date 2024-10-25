@@ -10,7 +10,7 @@
 #' Imputation-based approach with linear mixed-effect model (`imputation_LME`), and
 #' Joint model of the visiting process and the longitudinal process with a shared random intercept (`JMVL_G`).
 #'
-#' @param long_data Long dataset
+#' @param long_data Longitudinal dataset
 #' @param method The following methods are available:
 #' - `standard_LME`: Standard linear mixed-effect model.
 #' - `VA_LME`: Linear mixed-effect model adjusted for the historical number of visits.
@@ -21,18 +21,17 @@
 #' - `JMVL_G`: Joint model of the visiting process and the longitudinal process with a shared random intercept.
 #' @param id_var Variable for the subject ID to indicate the grouping
 #'   structure.
-#' @param time Variable for the observational time should be named as 'time'.
+#' @param time Variable for the observational time.
 #' @param outcome_var Variable name for the longitudinal outcome variable.
 #' @param LM_fixedEffect_variables Vector input of variable names with fixed
-#'   effects in the longitudinal model. Variables should not contain `time`
-#'   (Note: is the correct?). TODO: Note: above
+#'   effects in the longitudinal model. Variables should not contain `time`.
 #' @param LM_randomEffect_variables Vector input of variable names with random
 #'   effects in the longitudinal model. This argument is `NULL` for methods
 #'   including `JMVL_LY`, `JMVL_G` and `IIRR_weighting`.
 #' @param VPM_variables Vector input of variable names in the visiting process
 #'   model.
 #' @param imp_time_factor Scale factor for the time variable. This argument is
-#'   only needed in the imputation-based methods.
+#'   only needed in the imputation-based methods i.e., `imputation_LME`.
 #' @param optCtrl Control parameters for running the mixed-effect model. See
 #'   the `control` argument in [lme4::lmer()].
 #' @param control Control parameters for the `JMVL_G` method:
@@ -111,7 +110,6 @@
 #' fit_VALME$beta_hat
 long_est <- function(long_data,
                      method,
-                     ...,
                      id_var,
                      outcome_var,
                      LM_fixedEffect_variables = NULL,
@@ -123,7 +121,8 @@ long_est <- function(long_data,
                      control = list(verbose = FALSE,
                                     tol = 1e-3,
                                     GHk = 10,
-                                    maxiter = 150)) {
+                                    maxiter = 150),
+                     ...) {
 
   # stopifnot("Variable name for the observational time (`time`) must be named as 'time'."  != (time=="time"))
 
@@ -146,7 +145,7 @@ long_est <- function(long_data,
       "|id)"
     )
     control_params <- lme4::lmerControl(optimizer = "optimx", optCtrl = optCtrl)
-
+    # TODO: Search how to silence warnings
     lme_model <- lme4::lmer(lme_model_formula,
                             data = long_data, REML = FALSE,
                             control = lme4::lmerControl(optCtrl = control_params)
@@ -183,6 +182,7 @@ long_est <- function(long_data,
       "|id)"
     )
     control_params <- lme4::lmerControl(optimizer = "optimx", optCtrl = optCtrl)
+    # TODO: Search how to silence warnings
     lme_model <- lme4::lmer(lme_model_formula,
                             data = long_data, REML = FALSE,
                             control = lme4::lmerControl(optCtrl = control_params)
@@ -603,6 +603,7 @@ long_est <- function(long_data,
 
     lme_imp <- function(data_imp) {
       lme_model_formula <- paste("Y ~", paste(LM_fixedEffect_withTime_variables, collapse = "+"), "+(1+", paste(LM_randomEffect_variables, collapse = "+"), "|id)")
+      # TODO: Search how to silence warnings
       lme_model <- lme4::lmer(lme_model_formula,
                         data = data_imp, REML = TRUE,
                         control = lme4::lmerControl(optCtrl = list(optimizer = "optimx", optCtrl = list(method = "L-BFGS-B"), maxfun = 50000))

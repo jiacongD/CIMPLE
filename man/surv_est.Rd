@@ -20,7 +20,7 @@ surv_est(
 )
 }
 \arguments{
-\item{long_data}{Long dataset.}
+\item{long_data}{Longitudinal dataset.}
 
 \item{surv_data}{Survival dataset.}
 

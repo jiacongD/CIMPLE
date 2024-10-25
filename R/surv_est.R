@@ -11,7 +11,7 @@
 #' after imputation with an adjustment for the historical number of visits in
 #' the longitudinal model (`VAImputation_Cox`).
 #'
-#' @param long_data Long dataset.
+#' @param long_data Longitudinal dataset.
 #' @param surv_data Survival dataset.
 #' @param method The following methods are available:
 #' - `cox`: Cox proportional hazard model with time-varying covariates.
@@ -118,6 +118,10 @@ surv_est <- function(long_data,
 
   LM_fixedEffect_withTime_variables <- c(LM_fixedEffect_variables, "time")
   SM_variables <- c("Y", SM_timeInvariant_variables)
+
+  if(length(setdiff(unique(surv_data$id), unique(long_data$id))) > 0 | (length(setdiff(unique(long_data$id), unique(surv_data$id)))>0)) {
+    warning("ids in the long_data and surv_data are not the same.")
+  }
 
   if (method == "cox") {
     # Check Inputs
