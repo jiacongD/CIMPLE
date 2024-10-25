@@ -15,12 +15,10 @@ Imports:
     dplyr,
     JMbayes2,
     lme4,
-    Matrix,
-    merlin,
     mice,
     nleqslv,
     nlme,
-    pracma,
+    statmod,
     stats,
     survival,
     utils
