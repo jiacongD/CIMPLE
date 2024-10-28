@@ -80,22 +80,6 @@
 #'                    imp_time_factor = imp_time_factor)
 #' # Return the coefficient estimates
 #' fit_cox$alpha_hat
-#'
-#' # run the JMLD model
-#' fit_JMLD = surv_est(surv_data = surv_data,
-#'                     long_data = long_data,
-#'                     method = "JMLD",
-#'                     id_var = id_var,
-#'                     time = time,
-#'                     survTime = survTime,
-#'                     survEvent = survEvent,
-#'                     LM_fixedEffect_variables = LM_fixedEffect_variables,
-#'                     LM_randomEffect_variables = LM_randomEffect_variables,
-#'                     SM_timeVarying_variables = SM_timeVarying_variables,
-#'                     SM_timeInvariant_variables = SM_timeInvariant_variables,
-#'                     imp_time_factor = imp_time_factor)
-#' # Return the coefficient estimates
-#' fit_JMLD$alpha_hat
 surv_est <- function(long_data,
                      surv_data,
                      method,
