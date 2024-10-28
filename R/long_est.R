@@ -145,11 +145,10 @@ long_est <- function(long_data,
       "|id)"
     )
     control_params <- lme4::lmerControl(optimizer = "optimx", optCtrl = optCtrl)
-    # TODO: Search how to silence warnings
-    lme_model <- lme4::lmer(lme_model_formula,
-                            data = long_data, REML = FALSE,
-                            control = lme4::lmerControl(optCtrl = control_params)
-    )
+    lme_model <- suppressWarnings(lme4::lmer(lme_model_formula,
+                                             data = long_data,
+                                             REML = FALSE,
+                                             control = lme4::lmerControl(optCtrl = control_params)))
     # Print beta_hat
     beta_hat <- summary(lme_model)$coef[, 1]
     beta_sd <- summary(lme_model)$coef[, 2]
@@ -182,11 +181,10 @@ long_est <- function(long_data,
       "|id)"
     )
     control_params <- lme4::lmerControl(optimizer = "optimx", optCtrl = optCtrl)
-    # TODO: Search how to silence warnings
-    lme_model <- lme4::lmer(lme_model_formula,
+    lme_model <- suppressWarnings(lme4::lmer(lme_model_formula,
                             data = long_data, REML = FALSE,
                             control = lme4::lmerControl(optCtrl = control_params)
-    )
+    ))
     # Print beta_hat
     beta_hat <- summary(lme_model)$coef[, 1]
     beta_sd <- summary(lme_model)$coef[, 2]
@@ -597,17 +595,16 @@ long_est <- function(long_data,
 
     # multilevel imputation
     imp1 <- mice::mice(as.matrix(data3),
-                 m = 5,
-                 predictorMatrix = predM1, method = impM1, maxit = 5
+                       m = 5,
+                       predictorMatrix = predM1, method = impM1, maxit = 5
     )
 
     lme_imp <- function(data_imp) {
       lme_model_formula <- paste("Y ~", paste(LM_fixedEffect_withTime_variables, collapse = "+"), "+(1+", paste(LM_randomEffect_variables, collapse = "+"), "|id)")
-      # TODO: Search how to silence warnings
-      lme_model <- lme4::lmer(lme_model_formula,
-                        data = data_imp, REML = TRUE,
-                        control = lme4::lmerControl(optCtrl = list(optimizer = "optimx", optCtrl = list(method = "L-BFGS-B"), maxfun = 50000))
-      )
+      lme_model <- suppressWarnings(lme4::lmer(lme_model_formula,
+                              data = data_imp, REML = TRUE,
+                              control = lme4::lmerControl(optCtrl = list(optimizer = "optimx", optCtrl = list(method = "L-BFGS-B"), maxfun = 50000))
+      ))
       (beta_hat <- summary(lme_model)$coef[, 1])
     }
 
