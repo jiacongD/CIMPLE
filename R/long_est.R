@@ -229,7 +229,8 @@ long_est <- function(long_data,
 
     dNit <- as.numeric(!is.na(data$Y))
 
-    print("Estimating parameters in the VP mpdel...")
+
+    message("Estimating parameters in the VP model...")
     gamma.est.fun <- function(V, VV) {
       # data,data_base,vp_pred
       m <- nrow(VV)
@@ -265,7 +266,8 @@ long_est <- function(long_data,
       return(y.data1$y_star)
     }
 
-    print("Neighborhood smoothing...")
+
+    message("Neighborhood smoothing...")
     y.bar.numer <- sapply(Time.unique, function(u) {
       sum(na.omit(y.star.fun(u) * exp.gamma))
     })
@@ -285,7 +287,8 @@ long_est <- function(long_data,
     X.bar.ordered <- X.bar.numer / X.bar.denom
     X.bar <- X.bar.ordered[match(Time, Time.unique), ]
 
-    print("Estimating parameters in the LP model...")
+
+    message("Estimating parameters in the LP model...")
     LY.function <- function(beta) {
       res <- as.vector((y - y.bar) - (X - X.bar) %*% beta)
       (obj <- apply(X - X.bar, 2, function(x) {
@@ -335,7 +338,8 @@ long_est <- function(long_data,
     y <- data$Y
     dNit <- as.numeric(!is.na(data$Y))
 
-    print("Estimating parameters in the VP model...")
+
+    message("Estimating parameters in the VP model...")
     gamma.est.fun <- function(V, VV) {
       # data,data_base,vp_pred
       m <- nrow(VV)
@@ -364,7 +368,7 @@ long_est <- function(long_data,
     names(gamma_hat) <- colnames(V)
 
     ###### weightedGEE with the intercept and time ######
-    print("Estimating parameters in the LP model...")
+    message("Estimating parameters in the LP model...")
     weights <- as.vector(exp(V %*% gamma_hat))
     X.GEE <- as.matrix(data[, c(LM_fixedEffect_withTime_variables)])
     X.GEE <- cbind(1, X.GEE)
@@ -421,7 +425,7 @@ long_est <- function(long_data,
     Time.unique <- sort(unique(Time), decreasing = FALSE)
     y <- data$Y
 
-    print("Estimating parameters in the VP model...")
+    message("Estimating parameters in the VP model...")
     gamma.est.fun <- function(V, VV) {
       m <- nrow(VV)
       VV <- as.matrix(VV)
@@ -501,7 +505,7 @@ long_est <- function(long_data,
     })
     X_bar <- numer_X / denom
 
-    print("Estimating parameters in the LP model...")
+    message("Estimating parameters in the LP model...")
     if (sigma_hat_sq != 0) {
       design_M <- as.matrix(cbind(X, Bhat))
       design_Mbar <- as.matrix(cbind(X_bar, B_bar))
@@ -580,7 +584,7 @@ long_est <- function(long_data,
       data3$time <- data3$time * imp_time_factor
     }
 
-    print("start imputation...")
+    message("start imputation...")
     # empty imputation
     imp0 <- mice::mice(as.matrix(data3), maxit = 0)
     predM <- imp0$predictorMatrix
@@ -608,7 +612,7 @@ long_est <- function(long_data,
       (beta_hat <- summary(lme_model)$coef[, 1])
     }
 
-    print("Imputation finished.")
+    message("Imputation finished.")
 
     fit <- lapply(1:5, function(i) lme_imp(mice::complete(imp1, action = i)))
     beta_hat <- sapply(seq_along(fit[[1]]), function(i) mean(sapply(fit, `[`, i)))
@@ -671,7 +675,7 @@ long_est <- function(long_data,
       dplyr::select(id, all_of(LM_fixedEffect_withTime_variables), Y.x) %>%
       dplyr::rename(Y = Y.x)
 
-    print("Initialize the parameters...")
+    message("Initialize the parameters...")
     # fit an lme object
     lme_model_fixed_formula <- as.formula(paste0("Y~", paste0(LM_fixedEffect_withTime_variables, collapse = "+")))
     lme_model_random_formula <- as.formula(paste("~1|id"))
@@ -735,12 +739,12 @@ long_est <- function(long_data,
 
     # Start the iteration
     it <- 1
-    print("Set the initial values to be:")
-    print(initial_values)
-    print("Start the optimization...")
+    message("Set the initial values to be:")
+    message(initial_values)
+    message("Start the optimization...")
 
     for (it in 1:iter) {
-      print(paste("Iteration: ", it))
+      message(paste("Iteration: ", it))
       # save parameter values in matrix
       Y_mat[it, ] <- c(betas, sigma2_e)
       S_mat[it, ] <- c(gammas)
@@ -859,7 +863,7 @@ long_est <- function(long_data,
           best_result <- successful_results[[which.min(sapply(successful_results, function(res) sum(res$fvec^2)))]]
         } else {
           best_result <- NULL
-          print("No successful solution found.")
+          message("No successful solution found.")
         }
 
         return(best_result)

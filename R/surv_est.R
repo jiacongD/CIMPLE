@@ -156,11 +156,11 @@ surv_est <- function(long_data,
         lmeFit <- nlme::lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_optim)
       },
       error = function(e) {
-        print(paste0("Error with optim: ", e))
+        message(paste0("Error with optim: ", e))
         lmeFit <- nlme::lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_nlminb)
       }
     )
-    # print(lmeFit)
+    # message(lmeFit)
 
     # survival submodel
     coxFit_formula <- as.formula(paste("survival::Surv(D, d) ~ ", paste(SM_timeInvariant_variables, collapse = "+")))
@@ -170,7 +170,7 @@ surv_est <- function(long_data,
     jointFit = JMbayes2::jm(coxFit,lmeFit,time_var="time", n_chains=1L,n_iter=2000L,n_burnin=500L)
     # jointFit <- JMbayes2::jm(coxFit, lmeFit, time_var = "time", n_chains = 1L)
 
-    # print(summary(jointFit))
+    # message(summary(jointFit))
 
     surv_proc <- unlist(coef(jointFit)) # change the name of the output to alpha
     long_proc <- unlist(nlme::fixef(jointFit))
@@ -216,7 +216,7 @@ surv_est <- function(long_data,
         lmeFit <- nlme::lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_optim)
       },
       error = function(e) {
-        print(paste0("Error with optim: ", e))
+        message(paste0("Error with optim: ", e))
         lmeFit <- nlme::lme(lmeFit_fixedformula, random = lmeFit_randomformula, data = long_data, control = control_nlminb)
       }
     )
@@ -288,7 +288,7 @@ surv_est <- function(long_data,
       data3$time <- data3$time * imp_time_factor # convert time back to the original scale
     }
 
-    print(paste0("imp factor: ", imp_time_factor))
+    message(paste0("imp factor: ", imp_time_factor))
 
     df_full <- data3
     dim(df_full)
