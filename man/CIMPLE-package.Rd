@@ -4,9 +4,9 @@
 \name{CIMPLE-package}
 \alias{CIMPLE}
 \alias{CIMPLE-package}
-\title{CIMPLE: Analysis of Longitudinal EHR Data with Possibly Informative Observational Time}
+\title{CIMPLE: Analysis of Longitudinal Electronic Health Record (EHR) Data with Possibly Informative Observational Time}
 \description{
-A collection of methods involved with analyzing longitudinal EHR data with possibly informative observational time. These methods are grouped into two classes depending on the inferential task. One group focuses on estimating the effect of an exposure on a longitudinal biomarker while the other group assesses the impact of a longitudinal biomarker on time-to-diagnosis outcomes. The accompanying paper is Du et al (2024) \doi{10.48550/arXiv.2410.13113}.
+Analyzes longitudinal Electronic Health Record (EHR) data with possibly informative observational time. These methods are grouped into two classes depending on the inferential task. One group focuses on estimating the effect of an exposure on a longitudinal biomarker while the other group assesses the impact of a longitudinal biomarker on time-to-diagnosis outcomes. The accompanying paper is Du et al (2024) \doi{10.48550/arXiv.2410.13113}.
 }
 \author{
 \strong{Maintainer}: Howard Baik \email{howard.baik@yale.edu} (\href{https://orcid.org/0009-0000-8942-1618}{ORCID})
