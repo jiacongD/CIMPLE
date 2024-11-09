@@ -4,7 +4,18 @@
 
 * This is a new release.
 
-## Resubmission Notes
+## Current Resubmission Notes
+
+The package has been updated to address the following issues identified by Benjamin Altmann:
+
+"You missed one instance of cat() in R/long_est.R (line 967) which cannot
+be suppressed. Please change that to message() or wrap it in if(verbose)
+as well."
+
+- `cat()` in R/long_est.R (line 967) has been changed to `message()`.
+
+
+## Prior Resubmission Notes
 
 The package has been updated to address the following issues identified by Konstanze Lauseker:
 
