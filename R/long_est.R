@@ -964,7 +964,7 @@ long_est <- function(long_data,
             if (control$verbose) {
               conv <- FALSE
             }
-            cat("\n\nconverged!\n")
+            message("\n\nconverged!\n")
             break
           }
         }
